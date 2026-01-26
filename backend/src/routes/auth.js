@@ -86,8 +86,8 @@ router.post("/verify-otp", async (req, res) => {
     user.otpExpires = undefined;
     await user.save();
 
-    // Send welcome email after verification
-    await sendWelcomeEmail(user.email, user.name);
+    // Send welcome email after verification (Non-blocking)
+    sendWelcomeEmail(user.email, user.name).catch(err => console.error("Email send failed:", err));
 
     const token = jwt.sign(
       { id: user._id },
