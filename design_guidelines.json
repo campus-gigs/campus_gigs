@@ -1,0 +1,131 @@
+{
+  "identity": {
+    "name": "Campus Gigs",
+    "persona": "E1 - The Anti-AI Designer",
+    "vibe": "Energetic Utility",
+    "archetype": "Vibrant Play x Swiss Utility",
+    "target_audience": "Gen Z Students (18-25)"
+  },
+  "typography": {
+    "headings": {
+      "font_family": "Outfit, sans-serif",
+      "weights": ["500", "600", "700"],
+      "usage": "Headings, Hero Text, Big Numbers",
+      "letter_spacing": "tracking-tight"
+    },
+    "body": {
+      "font_family": "Inter, sans-serif",
+      "weights": ["400", "500"],
+      "usage": "Paragraphs, UI Labels, Inputs",
+      "letter_spacing": "tracking-normal"
+    },
+    "mono": {
+      "font_family": "JetBrains Mono, monospace",
+      "usage": "Code snippets, IDs, Technical data"
+    }
+  },
+  "colors": {
+    "primary": {
+      "name": "Electric Tangerine",
+      "hex": "#FF5A1F",
+      "tailwind": "bg-[#FF5A1F] text-white hover:bg-[#E04815]"
+    },
+    "secondary": {
+      "name": "Campus Stone",
+      "hex": "#F3F4F6",
+      "dark_hex": "#1F2937"
+    },
+    "background": {
+      "light": "#FAFAFA",
+      "dark": "#0A0A0A",
+      "card_light": "#FFFFFF",
+      "card_dark": "#121212"
+    },
+    "text": {
+      "primary_light": "#111827",
+      "primary_dark": "#F9FAFB",
+      "muted_light": "#6B7280",
+      "muted_dark": "#9CA3AF"
+    },
+    "status": {
+      "success": "#10B981",
+      "warning": "#F59E0B",
+      "error": "#EF4444",
+      "info": "#3B82F6"
+    }
+  },
+  "visual_enhancers": {
+    "radius": "rounded-xl",
+    "shadows": {
+      "card": "shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]",
+      "glow": "shadow-[0_0_20px_rgba(255,90,31,0.3)]"
+    },
+    "borders": {
+      "default": "border border-border/50",
+      "active": "border-primary/50"
+    },
+    "glassmorphism": {
+      "light": "bg-white/70 backdrop-blur-xl border-white/20",
+      "dark": "bg-black/60 backdrop-blur-xl border-white/10"
+    }
+  },
+  "layout_strategies": {
+    "container": "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8",
+    "grid_system": {
+      "job_board": "grid grid-cols-1 md:grid-cols-12 gap-6",
+      "dashboard": "grid grid-cols-1 lg:grid-cols-4 gap-6"
+    },
+    "spacing": {
+      "section_gap": "py-16 md:py-24",
+      "element_gap": "gap-4"
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-[#FF5A1F] text-white hover:bg-[#E04815] rounded-full px-6 py-2.5 font-medium transition-all active:scale-95 shadow-lg shadow-orange-500/20",
+      "secondary": "bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-full px-6 py-2.5 font-medium transition-all active:scale-95",
+      "ghost": "hover:bg-accent hover:text-accent-foreground rounded-full px-4 py-2 transition-colors"
+    },
+    "cards": {
+      "job_card": "group relative bg-card hover:border-primary/30 transition-all duration-300 border border-border rounded-xl p-6 hover:shadow-lg hover:-translate-y-1",
+      "stat_card": "bg-card border border-border rounded-xl p-6 flex flex-col gap-2"
+    },
+    "inputs": {
+      "default": "h-11 rounded-lg border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+    }
+  },
+  "image_urls": {
+    "hero_bg": "https://images.unsplash.com/photo-1677594332295-affd04f83115?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "community": "https://images.unsplash.com/photo-1758270705639-9727f350f026?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "student_work": "https://images.unsplash.com/photo-1627685317111-5133a227c0e4?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "campus_life": "https://images.unsplash.com/photo-1763890763432-17c9a529da20?crop=entropy&cs=srgb&fm=jpg&q=85"
+  },
+  "motion": {
+    "hover": "transition-all duration-300 ease-out",
+    "page_transition": "animate-in fade-in slide-in-from-bottom-4 duration-500",
+    "micro_interactions": "active:scale-95"
+  },
+  "instructions_to_main_agent": {
+    "general": "Follow the E1 'Anti-AI' philosophy. Avoid generic layouts. Use the 'Electric Tangerine' orange boldly but strategically (CTAs, active states).",
+    "layout": "Use the Bento Grid for the job board. Don't just list rows. Make the 'Featured' jobs bigger.",
+    "components": "Customize Shadcn components. Don't use the default radius. Use 'rounded-xl' or 'rounded-2xl' for a friendlier vibe. Use the 'Outfit' font for all headings.",
+    "dark_mode": "Ensure high contrast in dark mode. Use 'Obsidian' (#0A0A0A) background, not pure black. Borders should be subtle (white/10).",
+    "testing": "Add data-testid to all interactive elements (buttons, inputs, cards)."
+  },
+  "universal_guidelines": {
+    "do_not": [
+      "Use purple or teal for CTAs",
+      "Use Inter for headings",
+      "Center everything",
+      "Use gradient overload",
+      "Use generic AI emojis"
+    ],
+    "must_do": [
+      "Use 'Outfit' for headings",
+      "Use 'Electric Tangerine' (#FF5A1F) for primary actions",
+      "Add micro-interactions to everything",
+      "Use generous spacing (p-6, p-8)",
+      "Use glassmorphism for sticky headers"
+    ]
+  }
+}
