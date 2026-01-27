@@ -92,7 +92,7 @@ const ProfilePage = () => {
         <CardContent className="pt-6">
           <div className="flex items-center gap-4">
             <Avatar className="w-20 h-20">
-              <AvatarImage src={user?.profilePhoto} />
+              <AvatarImage src={user?.profilePhoto || "/logo.svg"} className="object-cover" />
               <AvatarFallback className="text-2xl">
                 {user?.name?.charAt(0).toUpperCase() || 'U'}
               </AvatarFallback>

@@ -2,21 +2,42 @@ const { Resend } = require('resend');
 
 const resend = new Resend(process.env.EMAIL_PASS);
 
-const sendEmail = async (to, subject, html) => {
+// This matches your deployed frontend URL where logo.svg lives
+const LOGO_URL = "https://campus-gigs.site/logo.svg";
+
+// Common style for the logo header
+const logoHeader = `
+  <div style="margin-bottom: 20px; text-align: center;">
+    <img src="${LOGO_URL}" alt="Campus Gigs Logo" width="50" height="50" style="background-color: #FF5A1F; padding: 8px; border-radius: 8px;" />
+    <h1 style="color: #FF5A1F; font-family: sans-serif; font-size: 24px; margin-top: 10px;">Campus Gigs</h1>
+  </div>
+`;
+
+const sendEmail = async (to, subject, htmlContent) => {
   try {
     const fromName = process.env.EMAIL_USER === 'resend' ? 'Campus Gigs' : 'Campus Gigs Admin';
-
-    // NOW USING YOUR VERIFIED DOMAIN!
-    // This allows sending to ANY email address (students, etc.)
     const fromEmail = 'noreply@campusgigs.site';
 
     console.log(`[Email] Sending to: ${to} via Resend HTTP API...`);
+
+    // Wrap content in a nice container with the logo
+    const fullHtml = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        ${logoHeader}
+        <div style="padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px; background-color: #ffffff;">
+          ${htmlContent}
+        </div>
+        <div style="text-align: center; margin-top: 20px; color: #888; font-size: 12px;">
+          &copy; ${new Date().getFullYear()} Campus Gigs. All rights reserved.
+        </div>
+      </div>
+    `;
 
     const { data, error } = await resend.emails.send({
       from: `${fromName} <${fromEmail}>`,
       to: [to],
       subject: subject,
-      html: html,
+      html: fullHtml,
     });
 
     if (error) {
@@ -39,12 +60,12 @@ const sendEmail = async (to, subject, html) => {
 const sendOtpEmail = async (email, otp) => {
   const subject = "Verify Your Campus Gigs Account";
   const html = `
-    <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
-      <h2 style="color: #4F46E5;">Campus Gigs Verification</h2>
-      <p>Your OTP code is:</p>
-      <h1 style="font-size: 32px; letter-spacing: 5px; color: #333;">${otp}</h1>
-      <p>This code expires in 10 minutes.</p>
+    <h2 style="color: #333; margin-top: 0;">Verification Code</h2>
+    <p>Welcome! Please enter the following code to verify your account:</p>
+    <div style="text-align: center; margin: 30px 0;">
+      <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #FF5A1F; background: #fff5f2; padding: 10px 20px; border-radius: 8px;">${otp}</span>
     </div>
+    <p>This code expires in 10 minutes.</p>
   `;
   return sendEmail(email, subject, html);
 };
@@ -52,10 +73,16 @@ const sendOtpEmail = async (email, otp) => {
 const sendWelcomeEmail = async (email, name) => {
   const subject = "Welcome to Campus Gigs!";
   const html = `
-    <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
-      <h2 style="color: #4F46E5;">Welcome, ${name}! 🎉</h2>
-      <p>Thanks for joining Campus Gigs. We're excited to have you.</p>
-      <p>You can now look for gigs or post your own.</p>
+    <h2 style="color: #333; margin-top: 0;">Welcome, ${name}! 🎉</h2>
+    <p>Thanks for joining the platform. We're excited to have you on board.</p>
+    <p>You can now:</p>
+    <ul>
+      <li>Browse available gigs</li>
+      <li>Post jobs for others</li>
+      <li>Connect with students</li>
+    </ul>
+    <div style="text-align: center; margin-top: 20px;">
+      <a href="https://campus-gigs.site/dashboard" style="background-color: #FF5A1F; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Go to Dashboard</a>
     </div>
   `;
   return sendEmail(email, subject, html);
@@ -68,11 +95,9 @@ const sendWelcomeEmail = async (email, name) => {
 const sendJobAcceptedEmail = async (email, jobTitle, workerName) => {
   const subject = `Job Accepted: ${jobTitle}`;
   const html = `
-    <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
-      <h2 style="color: #4F46E5;">Good News!</h2>
-      <p>Your job <strong>"${jobTitle}"</strong> has been accepted by <strong>${workerName}</strong>.</p>
-      <p>You can verify their details in your dashboard.</p>
-    </div>
+    <h2 style="color: #333; margin-top: 0;">Good News!</h2>
+    <p>Your job <strong>"${jobTitle}"</strong> has been accepted by <strong>${workerName}</strong>.</p>
+    <p>Check your dashboard to view their details and start specific instructions.</p>
   `;
   return sendEmail(email, subject, html);
 };
@@ -80,11 +105,9 @@ const sendJobAcceptedEmail = async (email, jobTitle, workerName) => {
 const sendJobCompletedEmail = async (email, jobTitle, workerName) => {
   const subject = `Job Completed: ${jobTitle}`;
   const html = `
-    <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
-      <h2 style="color: #10B981;">Job Done!</h2>
-      <p><strong>${workerName}</strong> has marked your job <strong>"${jobTitle}"</strong> as completed.</p>
-      <p>Please review the work and release payment if everything looks good.</p>
-    </div>
+    <h2 style="color: #10B981; margin-top: 0;">Job Done!</h2>
+    <p><strong>${workerName}</strong> has marked your job <strong>"${jobTitle}"</strong> as completed.</p>
+    <p>Please review the work.</p>
   `;
   return sendEmail(email, subject, html);
 };
@@ -96,13 +119,13 @@ const sendJobCompletedEmail = async (email, jobTitle, workerName) => {
 const sendNewMessageEmail = async (email, senderName, content) => {
   const subject = `New Message from ${senderName}`;
   const html = `
-    <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
-      <h3 style="color: #4F46E5;">New Message</h3>
-      <p><strong>${senderName}</strong> sent you a message:</p>
-      <blockquote style="border-left: 4px solid #ddd; padding-left: 10px; color: #555;">
-        ${content}
-      </blockquote>
-      <p>Log in to Campus Gigs to reply.</p>
+    <h3 style="color: #333; margin-top: 0;">New Message</h3>
+    <p><strong>${senderName}</strong> sent you:</p>
+    <blockquote style="border-left: 4px solid #FF5A1F; padding-left: 15px; color: #555; font-style: italic;">
+      "${content}"
+    </blockquote>
+    <div style="margin-top: 20px;">
+      <a href="https://campus-gigs.site/dashboard/chat" style="color: #FF5A1F; text-decoration: none; font-weight: bold;">Reply on Campus Gigs &rarr;</a>
     </div>
   `;
   return sendEmail(email, subject, html);
