@@ -42,9 +42,15 @@ Campus Gigs connects students who need help with tasks to students who want to e
 5.  **Review System:**
     *   5-Star rating system to build trust.
     *   Workers earn a reputation score displayed on their profile.
-6.  **Modern UI/UX:**
+6.  **Admin Panel & God Mode:**
+    *   **Dashboard:** Visualize app statistics (Users, Jobs, Reports).
+    *   **Moderation:** Ban/Unban users and delete inappropriate jobs.
+    *   **God Mode:** Super Admin features to Impersonate users, Force-verify accounts, and manage roles.
+    *   **Lazy Loading:** Optimized performance for fast data retrieval.
+7.  **Modern UI/UX:**
     *   **Dark Mode:** Fully supported system-wide dark theme.
     *   **Mobile Responsive:** Works perfectly on phones with a native-app feel (Drawer menu, touch targets).
+    *   **Performance:** Route-based code splitting and Gzip compression for lightning-fast loads.
 
 ---
 
@@ -143,6 +149,18 @@ campus-gigs/
 3.  Set Build Command: `npm run build`
 4.  Set Output Directory: `build` (or `dist` for Vite).
 5.  Add `REACT_APP_BACKEND_URL` to Environment Variables.
+
+---
+
+## 🔮 Future Roadmap
+
+Here are some exciting features planned for future updates:
+
+*   **💳 Secure Payments:** Integrate Stripe or Razorpay for secure escrow payments.
+*   **🤖 AI Job Matching:** Use AI to recommend jobs to workers based on their skills.
+*   **📱 Native Mobile App:** React Native version for iOS/Android.
+*   **📍 Geolocation:** Map view for campus gigs.
+*   **🏆 Gamification:** Badges and leaderboards.
 
 ---
 

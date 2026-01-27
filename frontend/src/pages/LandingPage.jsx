@@ -99,7 +99,7 @@ const LandingPage = () => {
                                     Start Earning
                                 </Button>
                             </Link>
-                            <Link to="/signup">
+                            <Link to="/login">
                                 <Button size="lg" variant="outline" className="h-12 px-8 text-lg rounded-full w-full sm:w-auto">
                                     Post a Job
                                 </Button>

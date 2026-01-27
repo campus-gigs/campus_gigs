@@ -1,6 +1,7 @@
 import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 // Public pages
@@ -132,6 +133,7 @@ function App() {
           },
         }}
       />
+      <SpeedInsights />
     </AuthProvider>
   );
 }
