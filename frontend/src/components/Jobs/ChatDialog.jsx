@@ -11,6 +11,7 @@ import { Input } from '../ui/input';
 import { useAuth } from '../../context/AuthContext';
 import { chatAPI } from '../../utils/api';
 import { toast } from 'sonner';
+import { io } from 'socket.io-client';
 
 const ChatDialog = ({ job, isOpen, onClose }) => {
     const { user } = useAuth();
@@ -19,6 +20,7 @@ const ChatDialog = ({ job, isOpen, onClose }) => {
     const [loading, setLoading] = useState(true);
     const [sending, setSending] = useState(false);
     const messagesEndRef = useRef(null);
+    const socketRef = useRef(null);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -33,14 +35,37 @@ const ChatDialog = ({ job, isOpen, onClose }) => {
         } finally {
             setLoading(false);
         }
-    }, [job._id]);
+    }, [job?._id]);
 
     useEffect(() => {
         if (isOpen && job?._id) {
             loadMessages();
-            // Set up polling for new messages (simple implementation)
-            const interval = setInterval(loadMessages, 5000);
-            return () => clearInterval(interval);
+
+            // Initialize Socket.io connection
+            // Uses the same backend URL as the API
+            const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000';
+            socketRef.current = io(backendUrl);
+
+            // Join the specific chat room for this job
+            socketRef.current.emit('join_chat', job._id);
+
+            // Listen for incoming messages
+            socketRef.current.on('receive_message', (message) => {
+                setMessages((prevMessages) => {
+                    // Check if message already exists to verify against potential duplicates
+                    if (prevMessages.some(m => m._id === message._id)) return prevMessages;
+                    return [...prevMessages, message];
+                });
+
+                // If the message is from me, scrollToBottom is handled by sending logic or effect
+                // If from other, you might want to show a toast or auto-scroll
+            });
+
+            return () => {
+                if (socketRef.current) {
+                    socketRef.current.disconnect();
+                }
+            };
         }
     }, [isOpen, job?._id, loadMessages]);
 
@@ -52,11 +77,15 @@ const ChatDialog = ({ job, isOpen, onClose }) => {
         e.preventDefault();
         if (!newMessage.trim()) return;
 
+        // Optimistic UI update could go here, but for now we wait for server confirmation/socket echo
+        // Actually, backend emits 'receive_message', so we can wait for that or just loadMessages().
+        // Let's rely on the socket event to update the UI for consistency.
+
         setSending(true);
         try {
             await chatAPI.sendMessage(job._id, newMessage);
             setNewMessage('');
-            await loadMessages();
+            // No need to call loadMessages() manually, the socket event should trigger update
         } catch (error) {
             toast.error('Failed to send message');
         } finally {

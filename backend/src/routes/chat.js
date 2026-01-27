@@ -64,7 +64,11 @@ router.post('/:jobId', auth, async (req, res) => {
         const message = await newMessage.save();
         await message.populate('sender', 'name');
 
-        // Send email notification to the recipient
+        // Real-time: Emit to the room
+        const io = req.app.get('io');
+        io.to(req.params.jobId).emit('receive_message', message);
+
+        // Send email notification to the recipient (Async, don't await blocking)
         // We need to fetch the job with participants' emails to know who to send to
         const jobWithEmails = await Job.findById(req.params.jobId)
             .populate('postedBy', 'email')
@@ -82,7 +86,8 @@ router.post('/:jobId', auth, async (req, res) => {
             }
 
             if (recipientEmail) {
-                await sendNewMessageEmail(recipientEmail, message.sender.name, content);
+                // Fire and forget email to avoid delaying the response
+                sendNewMessageEmail(recipientEmail, message.sender.name, content).catch(err => console.error('Email send failed', err));
             }
         }
 
