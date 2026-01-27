@@ -7,7 +7,7 @@ const UserSchema = new mongoose.Schema({
 
   role: {
     type: String,
-    enum: ["user", "admin"],
+    enum: ["user", "admin", "superadmin"],
     default: "user"
   },
 
@@ -46,5 +46,10 @@ const UserSchema = new mongoose.Schema({
     default: Date.now
   }
 });
+
+// Indexes for performance
+UserSchema.index({ role: 1 });
+UserSchema.index({ createdAt: -1 });
+UserSchema.index({ isActive: 1 });
 
 module.exports = mongoose.model("User", UserSchema);

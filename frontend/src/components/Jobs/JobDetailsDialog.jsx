@@ -135,158 +135,160 @@ const JobDetailsDialog = ({ job, isOpen, onClose, onUpdate }) => {
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <div className="flex items-start justify-between">
-              <div>
-                <DialogTitle className="text-xl">{job.title}</DialogTitle>
-                <DialogDescription className="flex items-center gap-2 mt-1">
-                  <User className="w-4 h-4" />
-                  Posted by {job.postedBy?.name || 'Unknown'}
-                  {job.postedBy?.rating > 0 && (
-                    <span className="flex items-center gap-0.5">
-                      <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                      {job.postedBy.rating.toFixed(1)}
-                    </span>
-                  )}
-                </DialogDescription>
+        <DialogContent className="w-full h-[100dvh] sm:h-auto sm:max-w-lg p-0 gap-0 overflow-y-auto sm:rounded-lg">
+          <div className="p-6">
+            <DialogHeader>
+              <div className="flex items-start justify-between">
+                <div>
+                  <DialogTitle className="text-xl">{job.title}</DialogTitle>
+                  <DialogDescription className="flex items-center gap-2 mt-1">
+                    <User className="w-4 h-4" />
+                    Posted by {job.postedBy?.name || 'Unknown'}
+                    {job.postedBy?.rating > 0 && (
+                      <span className="flex items-center gap-0.5">
+                        <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                        {job.postedBy.rating.toFixed(1)}
+                      </span>
+                    )}
+                  </DialogDescription>
+                </div>
+                <Badge variant={statusVariants[job.status]}>{job.status}</Badge>
               </div>
-              <Badge variant={statusVariants[job.status]}>{job.status}</Badge>
-            </div>
-          </DialogHeader>
+            </DialogHeader>
 
-          <div className="space-y-4">
-            {job.description && (
-              <p className="text-sm text-muted-foreground">{job.description}</p>
-            )}
+            <div className="space-y-4">
+              {job.description && (
+                <p className="text-sm text-muted-foreground">{job.description}</p>
+              )}
 
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div className="flex items-center gap-2">
-                <span className="font-semibold">₹{job.paymentAmount}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-muted-foreground" />
-                <span>{job.expectedDuration}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Tag className="w-4 h-4 text-muted-foreground" />
-                <span className="capitalize">{job.category}</span>
-              </div>
-              {job.deadline && (
+              <div className="grid grid-cols-2 gap-4 text-sm">
                 <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-muted-foreground" />
-                  <span>{new Date(job.deadline).toLocaleDateString()}</span>
+                  <span className="font-semibold">₹{job.paymentAmount}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-muted-foreground" />
+                  <span>{job.expectedDuration}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Tag className="w-4 h-4 text-muted-foreground" />
+                  <span className="capitalize">{job.category}</span>
+                </div>
+                {job.deadline && (
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-muted-foreground" />
+                    <span>{new Date(job.deadline).toLocaleDateString()}</span>
+                  </div>
+                )}
+              </div>
+
+              {job.acceptedBy && (
+                <div className="p-3 bg-muted rounded-lg text-sm">
+                  <span className="text-muted-foreground">Accepted by: </span>
+                  <span className="font-medium">{job.acceptedBy.name || 'Worker'}</span>
+                </div>
+              )}
+
+              {/* Review section */}
+              {canReview && (
+                <div className="border-t pt-4 space-y-3">
+                  <Label>Rate the worker</Label>
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setRating(star)}
+                        className="p-1"
+                      >
+                        <Star
+                          className={`w-6 h-6 transition-colors ${star <= rating
+                            ? 'fill-yellow-400 text-yellow-400'
+                            : 'text-muted-foreground'
+                            }`}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Report section */}
+              {showReport && (
+                <div className="border-t pt-4 space-y-3">
+                  <Label>Report reason</Label>
+                  <Textarea
+                    placeholder="Why are you reporting this job?"
+                    value={reportReason}
+                    onChange={(e) => setReportReason(e.target.value)}
+                    rows={3}
+                  />
+                  <div className="flex gap-2">
+                    <Button size="sm" onClick={handleReport} disabled={loading}>
+                      Submit Report
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setShowReport(false)}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>
 
-            {job.acceptedBy && (
-              <div className="p-3 bg-muted rounded-lg text-sm">
-                <span className="text-muted-foreground">Accepted by: </span>
-                <span className="font-medium">{job.acceptedBy.name || 'Worker'}</span>
-              </div>
-            )}
-
-            {/* Review section */}
-            {canReview && (
-              <div className="border-t pt-4 space-y-3">
-                <Label>Rate the worker</Label>
-                <div className="flex gap-1">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <button
-                      key={star}
-                      type="button"
-                      onClick={() => setRating(star)}
-                      className="p-1"
+            <DialogFooter className="flex-col sm:flex-row gap-2">
+              {!showReport && (
+                <>
+                  {canAccept && (
+                    <Button onClick={handleAccept} disabled={loading} className="flex-1">
+                      {loading ? 'Accepting...' : 'Accept Job'}
+                    </Button>
+                  )}
+                  {canComplete && (
+                    <Button onClick={handleComplete} disabled={loading} className="flex-1">
+                      {loading ? 'Completing...' : 'Mark Complete'}
+                    </Button>
+                  )}
+                  {canReview && (
+                    <Button onClick={handleReview} disabled={loading} className="flex-1">
+                      {loading ? 'Submitting...' : 'Submit Review'}
+                    </Button>
+                  )}
+                  {canDelete && (
+                    <Button
+                      variant="destructive"
+                      onClick={handleDeleteClick}
+                      disabled={loading}
                     >
-                      <Star
-                        className={`w-6 h-6 transition-colors ${star <= rating
-                          ? 'fill-yellow-400 text-yellow-400'
-                          : 'text-muted-foreground'
-                          }`}
-                      />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete
+                    </Button>
+                  )}
+                  {!isOwner && !showReport && (
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowReport(true)}
+                    >
+                      <Flag className="w-4 h-4 mr-2" />
+                      Report
+                    </Button>
+                  )}
+                </>
+              )}
 
-            {/* Report section */}
-            {showReport && (
-              <div className="border-t pt-4 space-y-3">
-                <Label>Report reason</Label>
-                <Textarea
-                  placeholder="Why are you reporting this job?"
-                  value={reportReason}
-                  onChange={(e) => setReportReason(e.target.value)}
-                  rows={3}
-                />
-                <div className="flex gap-2">
-                  <Button size="sm" onClick={handleReport} disabled={loading}>
-                    Submit Report
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setShowReport(false)}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            )}
+              {canChat && (
+                <Button
+                  onClick={() => setShowChat(true)}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700"
+                >
+                  <MessageCircle className="w-4 h-4 mr-2" />
+                  Chat
+                </Button>
+              )}
+            </DialogFooter>
           </div>
-
-          <DialogFooter className="flex-col sm:flex-row gap-2">
-            {!showReport && (
-              <>
-                {canAccept && (
-                  <Button onClick={handleAccept} disabled={loading} className="flex-1">
-                    {loading ? 'Accepting...' : 'Accept Job'}
-                  </Button>
-                )}
-                {canComplete && (
-                  <Button onClick={handleComplete} disabled={loading} className="flex-1">
-                    {loading ? 'Completing...' : 'Mark Complete'}
-                  </Button>
-                )}
-                {canReview && (
-                  <Button onClick={handleReview} disabled={loading} className="flex-1">
-                    {loading ? 'Submitting...' : 'Submit Review'}
-                  </Button>
-                )}
-                {canDelete && (
-                  <Button
-                    variant="destructive"
-                    onClick={handleDeleteClick}
-                    disabled={loading}
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Delete
-                  </Button>
-                )}
-                {!isOwner && !showReport && (
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowReport(true)}
-                  >
-                    <Flag className="w-4 h-4 mr-2" />
-                    Report
-                  </Button>
-                )}
-              </>
-            )}
-
-            {canChat && (
-              <Button
-                onClick={() => setShowChat(true)}
-                className="flex-1 bg-blue-600 hover:bg-blue-700"
-              >
-                <MessageCircle className="w-4 h-4 mr-2" />
-                Chat
-              </Button>
-            )}
-          </DialogFooter>
         </DialogContent>
       </Dialog>
 

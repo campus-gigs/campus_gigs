@@ -72,14 +72,15 @@ export const adminAPI = {
   getUser: (id) => api.get(`/api/admin/users/${id}`),
   updateUser: (id, data) => api.put(`/api/admin/users/${id}`, data),
   banUser: (id) => api.patch(`/api/admin/users/${id}/ban`),
-  deleteUser: (id) => api.delete(`/api/admin/users/${id}`),
+  deleteUser: (id) => api.delete(`/api/god/users/${id}`),
   getJobs: (params) => api.get('/api/admin/jobs', { params }),
   getJob: (id) => api.get(`/api/admin/jobs/${id}`),
   updateJob: (id, data) => api.put(`/api/admin/jobs/${id}`, data),
   deleteJob: (id) => api.delete(`/api/admin/jobs/${id}`),
   getReports: (params) => api.get('/api/admin/reports', { params }),
   deleteReview: (id) => api.delete(`/api/admin/reviews/${id}`),
-  impersonateUser: (id) => api.post(`/api/admin/impersonate/${id}`),
+  impersonateUser: (id) => api.post(`/api/god/impersonate/${id}`),
+  changeRole: (id, role) => api.put(`/api/god/users/${id}/role`, { role }),
 };
 
 // Chat API

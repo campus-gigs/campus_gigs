@@ -13,7 +13,7 @@ module.exports = async (req, res, next) => {
       return res.status(404).json({ msg: "User not found" });
     }
 
-    if (user.role !== "admin") {
+    if (!['admin', 'superadmin'].includes(user.role)) {
       return res.status(403).json({ msg: "Admin access required" });
     }
 

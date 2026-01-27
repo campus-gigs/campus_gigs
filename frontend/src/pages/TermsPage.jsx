@@ -1,135 +1,120 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { ArrowLeft, Scale } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/button';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
 
 const TermsPage = () => {
-    const navigate = useNavigate();
-
     return (
-        <div className="min-h-screen bg-background p-6">
-            <div className="max-w-4xl mx-auto space-y-6">
-                <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
-                    <ArrowLeft className="w-4 h-4 mr-2" /> Back
-                </Button>
+        <div className="min-h-screen bg-background">
+            {/* Header */}
+            <header className="border-b bg-card/50 backdrop-blur-xl sticky top-0 z-50">
+                <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+                    <Link to="/" className="flex items-center gap-2 group">
+                        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center transform group-hover:scale-110 transition-transform">
+                            <ArrowLeft className="w-4 h-4 text-white" />
+                        </div>
+                        <span className="font-semibold text-muted-foreground group-hover:text-foreground transition-colors">
+                            Back to Home
+                        </span>
+                    </Link>
+                    <div className="flex items-center gap-2">
+                        <Scale className="w-5 h-5 text-primary" />
+                        <span className="font-bold text-lg font-display">Campus Gigs</span>
+                    </div>
+                </div>
+            </header>
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-3xl font-bold">Terms and Conditions</CardTitle>
-                        <p className="text-muted-foreground">Last Updated: January 27, 2026</p>
-                    </CardHeader>
-                    <CardContent className="prose dark:prose-invert max-w-none space-y-6">
-                        <p>By accessing or using Campus Gigs, you agree to these Terms & Conditions. If you do not agree, do not use the app.</p>
+            <main className="container mx-auto px-4 py-12 max-w-4xl">
+                <h1 className="text-4xl font-bold font-display mb-2">Terms of Service</h1>
+                <p className="text-muted-foreground mb-8">Last Updated: January 2026</p>
 
-                        <section>
-                            <h3 className="text-xl font-semibold">1. About Campus Gigs</h3>
-                            <p>Campus Gigs is a student job marketplace platform that connects:</p>
-                            <ul className="list-disc pl-6">
-                                <li>Students seeking part-time gigs, internships, or tasks</li>
-                                <li>Individuals or organizations offering such opportunities</li>
-                            </ul>
-                            <p>We only act as an intermediary and do not guarantee jobs, payments, or outcomes.</p>
-                        </section>
+                <div className="space-y-8 text-foreground/90 leading-relaxed">
+                    <section className="bg-card p-8 rounded-2xl border shadow-sm">
+                        <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                            <span className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm">1</span>
+                            Acceptance of Terms
+                        </h2>
+                        <p className="mb-4">
+                            By accessing or using Campus Gigs ("the Platform"), you agree to be bound by these Terms of Service.
+                            The Platform is exclusively for verifiable students of accredited universities.
+                        </p>
+                        <p>
+                            If you do not agree to these terms, you may not access or use the Platform.
+                        </p>
+                    </section>
 
-                        <section>
-                            <h3 className="text-xl font-semibold">2. Eligibility</h3>
-                            <ul className="list-disc pl-6">
-                                <li>You must be 18 years or older</li>
-                                <li>You must provide accurate and complete information</li>
-                                <li>Fake profiles, impersonation, or misuse will result in account termination</li>
-                            </ul>
-                        </section>
+                    <section className="bg-card p-8 rounded-2xl border shadow-sm">
+                        <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                            <span className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm">2</span>
+                            User Eligibility
+                        </h2>
+                        <ul className="list-disc pl-6 space-y-2">
+                            <li>You must be at least 18 years old.</li>
+                            <li>You must possess a valid <strong>.edu</strong> email address from a recognized institution.</li>
+                            <li>You typically maintain "Student" status. Alumni may use the platform at the discretion of administrators.</li>
+                            <li>One account per person only.</li>
+                        </ul>
+                    </section>
 
-                        <section>
-                            <h3 className="text-xl font-semibold">3. User Responsibilities</h3>
-                            <p>You agree to:</p>
-                            <ul className="list-disc pl-6">
-                                <li>Use the app for lawful purposes only</li>
-                                <li>Not post fake, misleading, illegal, or abusive content</li>
-                                <li>Not scam, harass, threaten, or exploit other users</li>
-                                <li>Handle payments, work, and communication at your own risk</li>
-                            </ul>
-                            <p>You are fully responsible for your interactions on the platform.</p>
-                        </section>
+                    <section className="bg-card p-8 rounded-2xl border shadow-sm">
+                        <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                            <span className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm">3</span>
+                            Job Posting & Content
+                        </h2>
+                        <p className="mb-4">Users may post "Gigs" or tasks for other students. Content must NOT include:</p>
+                        <ul className="list-disc pl-6 space-y-2">
+                            <li>Academic dishonesty (e.g., writing essays for others, cheating on exams).</li>
+                            <li>Illegal activities or goods (drugs, weapons, etc.).</li>
+                            <li>Hate speech, harassment, or adult content.</li>
+                            <li>Spam or multi-level marketing schemes.</li>
+                        </ul>
+                        <p className="mt-4 text-sm text-muted-foreground bg-muted p-4 rounded-lg">
+                            <strong>Note:</strong> We strictly prohibit "Academic Cheating" services. Any user found soliciting or providing coursework completion will be permanently banned.
+                        </p>
+                    </section>
 
-                        <section>
-                            <h3 className="text-xl font-semibold">4. Job Listings & Payments</h3>
-                            <p>Campus Gigs does not verify every job post or employer. We are not responsible for:</p>
-                            <ul className="list-disc pl-6">
-                                <li>Non-payment</li>
-                                <li>Partial payment</li>
-                                <li>Work disputes</li>
-                                <li>Fraud or scams</li>
-                            </ul>
-                            <p>All payments and work terms are strictly between users.</p>
-                            <p className="font-semibold text-yellow-600 dark:text-yellow-400">👉 Always verify before accepting or offering a gig.</p>
-                        </section>
+                    <section className="bg-card p-8 rounded-2xl border shadow-sm">
+                        <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                            <span className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm">4</span>
+                            Payments & Safety
+                        </h2>
+                        <p className="mb-4">
+                            Campus Gigs connects users but does not currently process payments directly.
+                            Payments are settled offline or via third-party apps (Venmo, UPI, Zelle) between users.
+                        </p>
+                        <ul className="list-disc pl-6 space-y-2">
+                            <li><strong>Verification:</strong> Always verify the task completion before sending money.</li>
+                            <li><strong>Meeting:</strong> For physical tasks, meet in public, safe locations on campus.</li>
+                            <li><strong>Liability:</strong> Campus Gigs is not liable for any disputes, financial loss, or interactions between users. Use the platform at your own risk.</li>
+                        </ul>
+                    </section>
 
-                        <section>
-                            <h3 className="text-xl font-semibold">5. No Employment Relationship</h3>
-                            <p>Campus Gigs is not an employer. We do not provide salaries, insurance, benefits, or guarantees. Any agreement formed is between users only.</p>
-                        </section>
+                    <section className="bg-card p-8 rounded-2xl border shadow-sm">
+                        <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                            <span className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm">5</span>
+                            Termination
+                        </h2>
+                        <p>
+                            We reserve the right to suspend or terminate your account at our sole discretion, without notice,
+                            for conduct that we believe violates these Terms or is harmful to other users, us, or third parties,
+                            or for any other reason.
+                        </p>
+                    </section>
 
-                        <section>
-                            <h3 className="text-xl font-semibold">6. Prohibited Activities</h3>
-                            <p>You must NOT:</p>
-                            <ul className="list-disc pl-6">
-                                <li>Post illegal, adult, or harmful jobs</li>
-                                <li>Collect personal data for misuse</li>
-                                <li>Bypass platform security</li>
-                                <li>Use bots, scrapers, or automation</li>
-                                <li>Attempt to damage or hack the app</li>
-                            </ul>
-                            <p>Violation may lead to permanent ban and legal action.</p>
-                        </section>
+                    <div className="pt-8 text-center">
+                        <p className="text-muted-foreground mb-4">Questions about these terms?</p>
+                        <Button variant="outline" asChild>
+                            <a href="mailto:support@campusgigs.site">Contact Support</a>
+                        </Button>
+                    </div>
+                </div>
+            </main>
 
-                        <section>
-                            <h3 className="text-xl font-semibold">7. Account Suspension & Termination</h3>
-                            <p>We reserve the right to:</p>
-                            <ul className="list-disc pl-6">
-                                <li>Suspend or terminate accounts without notice</li>
-                                <li>Remove any content violating these terms</li>
-                                <li>Block access to protect users and the platform</li>
-                            </ul>
-                        </section>
-
-                        <section>
-                            <h3 className="text-xl font-semibold">8. Limitation of Liability</h3>
-                            <p>Campus Gigs is not liable for:</p>
-                            <ul className="list-disc pl-6">
-                                <li>Financial loss</li>
-                                <li>Data loss</li>
-                                <li>Job loss</li>
-                                <li>Physical, emotional, or legal damages</li>
-                                <li>Actions of other users</li>
-                            </ul>
-                            <p>Use the app at your own risk.</p>
-                        </section>
-
-                        <section>
-                            <h3 className="text-xl font-semibold">9. Data & Privacy</h3>
-                            <p>We collect basic data to operate the platform. We do not sell personal data intentionally. Full details are covered under our Privacy Policy.</p>
-                        </section>
-
-                        <section>
-                            <h3 className="text-xl font-semibold">10. Changes to Terms</h3>
-                            <p>We may update these Terms anytime. Continued use of the app means you accept the updated terms.</p>
-                        </section>
-
-                        <section>
-                            <h3 className="text-xl font-semibold">11. Governing Law</h3>
-                            <p>These Terms are governed by the laws of India. Any disputes fall under Indian jurisdiction.</p>
-                        </section>
-
-                        <section>
-                            <h3 className="text-xl font-semibold">12. Contact</h3>
-                            <p>For questions or issues:</p>
-                            <p>📧 campusgigs2@gmail.com</p>
-                        </section>
-                    </CardContent>
-                </Card>
-            </div>
+            <footer className="border-t py-12 bg-card mt-12">
+                <div className="container mx-auto px-4 text-center text-muted-foreground">
+                    <p>&copy; {new Date().getFullYear()} Campus Gigs. All rights reserved.</p>
+                </div>
+            </footer>
         </div>
     );
 };

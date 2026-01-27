@@ -1,16 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Briefcase, AlertTriangle, TrendingUp, Ban, Trash2, Search, Ghost } from 'lucide-react';
+import { Users, Briefcase, AlertTriangle, TrendingUp, Ban, Trash2, Search, Ghost, MoreVertical, ShieldAlert, UserMinus } from 'lucide-react';
 import { Card, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Badge } from '../ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from '../ui/dropdown-menu';
 import { adminAPI } from '../../utils/api';
 import { toast } from 'sonner';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 const AdminPanel = () => {
+  const [activeTab, setActiveTab] = useState('users');
   const [stats, setStats] = useState(null);
   const [users, setUsers] = useState([]);
   const [jobs, setJobs] = useState([]);
@@ -18,29 +27,56 @@ const AdminPanel = () => {
   const [loading, setLoading] = useState(true);
   const [searchUser, setSearchUser] = useState('');
   const [searchJob, setSearchJob] = useState('');
-  const { login } = useAuth();
+  const { login, isSuperAdmin } = useAuth();
   const navigate = useNavigate();
 
+  // Stats are always loaded on mount
   useEffect(() => {
-    fetchData();
+    fetchStats();
   }, []);
 
-  const fetchData = async () => {
+  // Fetch tab data when active tab changes
+  useEffect(() => {
+    if (activeTab === 'users' && users.length === 0) fetchUsers();
+    if (activeTab === 'jobs' && jobs.length === 0) fetchJobs();
+    if (activeTab === 'reports' && reports.length === 0) fetchReports();
+  }, [activeTab]);
+
+  const fetchStats = async () => {
     try {
-      const [statsRes, usersRes, jobsRes, reportsRes] = await Promise.all([
-        adminAPI.getStats(),
-        adminAPI.getUsers({ limit: 50 }),
-        adminAPI.getJobs({ limit: 50 }),
-        adminAPI.getReports({ status: 'pending' }),
-      ]);
-      setStats(statsRes.data);
-      setUsers(usersRes.data.users);
-      setJobs(jobsRes.data.jobs);
-      setReports(reportsRes.data.reports);
+      const res = await adminAPI.getStats();
+      setStats(res.data);
+      setLoading(false); // Initial loading done
     } catch (error) {
-      toast.error('Failed to load admin data');
-    } finally {
+      toast.error('Failed to load stats');
       setLoading(false);
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const res = await adminAPI.getUsers({ limit: 50 });
+      setUsers(res.data.users);
+    } catch (error) {
+      toast.error('Failed to load users');
+    }
+  };
+
+  const fetchJobs = async () => {
+    try {
+      const res = await adminAPI.getJobs({ limit: 50 });
+      setJobs(res.data.jobs);
+    } catch (error) {
+      toast.error('Failed to load jobs');
+    }
+  };
+
+  const fetchReports = async () => {
+    try {
+      const res = await adminAPI.getReports({ status: 'pending' });
+      setReports(res.data.reports);
+    } catch (error) {
+      toast.error('Failed to load reports');
     }
   };
 
@@ -78,6 +114,28 @@ const AdminPanel = () => {
     }
   };
 
+  const handleDeleteUserPermanent = async (userId, userName) => {
+    if (!window.confirm(`🔥 DANGER: PERMANENTLY DELETE ${userName}? This cannot be undone.`)) return;
+    try {
+      await adminAPI.deleteUser(userId);
+      toast.success(`User ${userName} obliterated.`);
+      setUsers(users.filter(u => u._id !== userId));
+    } catch (error) {
+      toast.error('Failed to delete user');
+    }
+  };
+
+  const handleRoleChange = async (userId, userName, newRole) => {
+    if (!window.confirm(`Change ${userName}'s role to ${newRole}?`)) return;
+    try {
+      await adminAPI.changeRole(userId, newRole);
+      toast.success(`User promoted/demoted successfully`);
+      setUsers(users.map(u => u._id === userId ? { ...u, role: newRole } : u));
+    } catch (error) {
+      toast.error('Failed to change role');
+    }
+  };
+
   const filteredUsers = users.filter(
     (u) =>
       u.name.toLowerCase().includes(searchUser.toLowerCase()) ||
@@ -101,7 +159,8 @@ const AdminPanel = () => {
   return (
     <div className="space-y-6">
       {/* Stats Overview */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {/* Stats Overview */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
@@ -160,11 +219,11 @@ const AdminPanel = () => {
       </div>
 
       {/* Management Tabs */}
-      <Tabs defaultValue="users">
-        <TabsList>
-          <TabsTrigger value="users">Users ({users.length})</TabsTrigger>
-          <TabsTrigger value="jobs">Jobs ({jobs.length})</TabsTrigger>
-          <TabsTrigger value="reports">Reports ({reports.length})</TabsTrigger>
+      <Tabs defaultValue="users" onValueChange={setActiveTab}>
+        <TabsList className="w-full justify-start h-auto flex-wrap gap-2 bg-muted/50 p-2">
+          <TabsTrigger value="users" className="flex-1 sm:flex-none">Users ({users.length})</TabsTrigger>
+          <TabsTrigger value="jobs" className="flex-1 sm:flex-none">Jobs ({jobs.length})</TabsTrigger>
+          <TabsTrigger value="reports" className="flex-1 sm:flex-none">Reports ({reports.length})</TabsTrigger>
         </TabsList>
 
         {/* Users Tab */}
@@ -182,8 +241,8 @@ const AdminPanel = () => {
           <div className="space-y-2">
             {filteredUsers.map((user) => (
               <Card key={user._id}>
-                <CardContent className="py-4 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
+                <CardContent className="py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3 w-full sm:w-auto">
                     <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-medium">
                       {user.name.charAt(0).toUpperCase()}
                     </div>
@@ -194,27 +253,61 @@ const AdminPanel = () => {
                     {user.isBanned && <Badge variant="destructive">Banned</Badge>}
                     {user.role === 'admin' && <Badge>Admin</Badge>}
                   </div>
-                  {user.role !== 'admin' && (
-                    <div className="flex gap-2">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => handleImpersonate(user._id, user.name)}
-                        title="God Mode: Login as User"
-                      >
-                        <Ghost className="w-4 h-4 mr-1" />
-                        Login As
-                      </Button>
-                      <Button
-                        variant={user.isBanned ? 'outline' : 'destructive'}
-                        size="sm"
-                        onClick={() => handleBanUser(user._id)}
-                      >
-                        <Ban className="w-4 h-4 mr-1" />
-                        {user.isBanned ? 'Unban' : 'Ban'}
-                      </Button>
-                    </div>
-                  )}
+                  <div className="flex gap-2">
+                    {/* Standard Actions */}
+                    <Button
+                      variant={user.isBanned ? 'outline' : 'destructive'}
+                      size="sm"
+                      onClick={() => handleBanUser(user._id)}
+                      className={user.isBanned ? "border-red-500 text-red-500 hover:bg-red-50" : ""}
+                    >
+                      <Ban className="w-4 h-4 mr-1" />
+                      {user.isBanned ? 'Unban' : 'Ban'}
+                    </Button>
+
+                    {/* God Mode Menu */}
+                    {isSuperAdmin && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-9 w-9">
+                            <MoreVertical className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-[200px] bg-background border-border">
+                          <DropdownMenuLabel>God Actions</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+
+                          <DropdownMenuItem onClick={() => handleImpersonate(user._id, user.name)}>
+                            <Ghost className="w-4 h-4 mr-2" />
+                            Login as User
+                          </DropdownMenuItem>
+
+                          {/* Role Management */}
+                          {user.role === 'admin' ? (
+                            <DropdownMenuItem onClick={() => handleRoleChange(user._id, user.name, 'user')}>
+                              <UserMinus className="w-4 h-4 mr-2" />
+                              Demote to User
+                            </DropdownMenuItem>
+                          ) : (
+                            <DropdownMenuItem onClick={() => handleRoleChange(user._id, user.name, 'admin')}>
+                              <ShieldAlert className="w-4 h-4 mr-2 text-purple-600" />
+                              Promote to Admin
+                            </DropdownMenuItem>
+                          )}
+
+                          <DropdownMenuSeparator />
+
+                          <DropdownMenuItem
+                            className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                            onClick={() => handleDeleteUserPermanent(user._id, user.name)}
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Permanent Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             ))}

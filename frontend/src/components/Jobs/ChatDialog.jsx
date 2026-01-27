@@ -97,7 +97,7 @@ const ChatDialog = ({ job, isOpen, onClose }) => {
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-md h-[600px] flex flex-col p-0">
+            <DialogContent className="w-full h-[100dvh] sm:h-[600px] sm:max-w-md flex flex-col p-0 gap-0 sm:rounded-lg overflow-hidden">
                 <DialogHeader className="p-4 border-b">
                     <DialogTitle className="flex items-center gap-2">
                         <User className="w-5 h-5" />

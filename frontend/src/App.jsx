@@ -1,30 +1,37 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 // Public pages
-import LandingPage from './pages/LandingPage';
+const LandingPage = React.lazy(() => import('./pages/LandingPage'));
 
 // Auth pages
-import LoginPage from './components/Auth/LoginPage';
-import SignupPage from './components/Auth/SignupPage';
-import TermsPage from './pages/TermsPage';
-import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
-import SafetyTipsPage from './pages/SafetyTipsPage';
+const LoginPage = React.lazy(() => import('./components/Auth/LoginPage'));
+const SignupPage = React.lazy(() => import('./components/Auth/SignupPage'));
+const TermsPage = React.lazy(() => import('./pages/TermsPage'));
+const PrivacyPolicyPage = React.lazy(() => import('./pages/PrivacyPolicyPage'));
+const SafetyTipsPage = React.lazy(() => import('./pages/SafetyTipsPage'));
 
 // Layout
-import DashboardLayout from './components/Layout/DashboardLayout';
+const DashboardLayout = React.lazy(() => import('./components/Layout/DashboardLayout'));
 
 // Dashboard pages
-import JobBoard from './components/Dashboard/JobBoard';
-import MyJobsPage from './components/Dashboard/MyJobsPage';
-import FavoritesPage from './components/Dashboard/FavoritesPage';
-import ProfilePage from './components/Dashboard/ProfilePage';
-import ChatPage from './components/Dashboard/ChatPage';
+const JobBoard = React.lazy(() => import('./components/Dashboard/JobBoard'));
+const MyJobsPage = React.lazy(() => import('./components/Dashboard/MyJobsPage'));
+const FavoritesPage = React.lazy(() => import('./components/Dashboard/FavoritesPage'));
+const ProfilePage = React.lazy(() => import('./components/Dashboard/ProfilePage'));
+const ChatPage = React.lazy(() => import('./components/Dashboard/ChatPage'));
 
 // Admin pages
-import AdminPanel from './components/Admin/AdminPanel';
+const AdminPanel = React.lazy(() => import('./components/Admin/AdminPanel'));
+
+// Loading component
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+  </div>
+);
 
 // Protected route wrapper for admin
 const AdminRoute = ({ children }) => {
@@ -57,25 +64,55 @@ function App() {
 
         <Routes>
           {/* Public routes */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
-          <Route path="/terms" element={<TermsPage />} />
-          <Route path="/privacy" element={<PrivacyPolicyPage />} />
-          <Route path="/safety" element={<SafetyTipsPage />} />
+          <Route path="/" element={
+            <Suspense fallback={<PageLoader />}>
+              <LandingPage />
+            </Suspense>
+          } />
+          <Route path="/login" element={
+            <Suspense fallback={<PageLoader />}>
+              <LoginPage />
+            </Suspense>
+          } />
+          <Route path="/signup" element={
+            <Suspense fallback={<PageLoader />}>
+              <SignupPage />
+            </Suspense>
+          } />
+          <Route path="/terms" element={
+            <Suspense fallback={<PageLoader />}>
+              <TermsPage />
+            </Suspense>
+          } />
+          <Route path="/privacy" element={
+            <Suspense fallback={<PageLoader />}>
+              <PrivacyPolicyPage />
+            </Suspense>
+          } />
+          <Route path="/safety" element={
+            <Suspense fallback={<PageLoader />}>
+              <SafetyTipsPage />
+            </Suspense>
+          } />
 
           {/* Protected dashboard routes */}
-          <Route path="/dashboard" element={<DashboardLayout />}>
-            <Route index element={<JobBoard />} />
-            <Route path="my-jobs" element={<MyJobsPage />} />
-            <Route path="favorites" element={<FavoritesPage />} />
-            <Route path="profile" element={<ProfilePage />} />
-            <Route path="chat" element={<ChatPage />} />
+          <Route path="/dashboard" element={
+            <Suspense fallback={<PageLoader />}>
+              <DashboardLayout />
+            </Suspense>
+          }>
+            <Route index element={<Suspense fallback={<PageLoader />}><JobBoard /></Suspense>} />
+            <Route path="my-jobs" element={<Suspense fallback={<PageLoader />}><MyJobsPage /></Suspense>} />
+            <Route path="favorites" element={<Suspense fallback={<PageLoader />}><FavoritesPage /></Suspense>} />
+            <Route path="profile" element={<Suspense fallback={<PageLoader />}><ProfilePage /></Suspense>} />
+            <Route path="chat" element={<Suspense fallback={<PageLoader />}><ChatPage /></Suspense>} />
             <Route
               path="admin"
               element={
                 <AdminRoute>
-                  <AdminPanel />
+                  <Suspense fallback={<PageLoader />}>
+                    <AdminPanel />
+                  </Suspense>
                 </AdminRoute>
               }
             />

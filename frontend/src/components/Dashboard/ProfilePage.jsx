@@ -90,7 +90,7 @@ const ProfilePage = () => {
       {/* Profile header */}
       <Card>
         <CardContent className="pt-6">
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
             <Avatar className="w-20 h-20">
               <AvatarImage src={user?.profilePhoto || "/logo.svg"} className="object-cover" />
               <AvatarFallback className="text-2xl">
@@ -101,7 +101,7 @@ const ProfilePage = () => {
               <h2 className="text-2xl font-bold font-display">{user?.name}</h2>
               <p className="text-muted-foreground">{user?.email}</p>
               {user?.rating > 0 && (
-                <div className="flex items-center gap-1 mt-1">
+                <div className="flex items-center justify-center sm:justify-start gap-1 mt-1">
                   <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                   <span className="font-medium">{user.rating.toFixed(1)}</span>
                   <span className="text-muted-foreground">
@@ -115,7 +115,7 @@ const ProfilePage = () => {
       </Card>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card>
           <CardContent className="pt-6 text-center">
             <Briefcase className="w-8 h-8 mx-auto mb-2 text-primary" />
@@ -217,7 +217,7 @@ const ProfilePage = () => {
           <CardTitle className="text-destructive">Danger Zone</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <p className="font-medium">Delete Account</p>
               <p className="text-sm text-muted-foreground">

@@ -1,5 +1,6 @@
 require("dotenv").config();
 const express = require("express");
+const mongoose = require("mongoose");
 const cors = require("cors");
 const connectDB = require("./config/db");
 
@@ -22,6 +23,9 @@ app.set('io', io);
 const onlineUsers = new Map();
 app.set('onlineUsers', onlineUsers);
 
+const compression = require('compression');
+app.use(compression());
+
 connectDB();
 
 app.use(cors());
@@ -36,9 +40,35 @@ app.use("/api/profile", require("./routes/profile"));
 app.use("/api/reports", require("./routes/reports"));
 app.use("/api/admin", require("./routes/admin"));
 app.use("/api/chat", require("./routes/chat"));
+app.use("/api/god", require("./routes/god"));
 
 // Test Routes (for debugging)
 app.use("/api/test", require("./routes/test"));
+
+// Auto-Promote God User on Startup
+const User = require('./models/User');
+const enlistGodUser = async () => {
+  try {
+    const godEmail = "arunreddy.k2023@vitstudent.ac.in";
+    const godUser = await User.findOne({ email: godEmail });
+    if (godUser && godUser.role !== 'superadmin') {
+      godUser.role = 'superadmin';
+      godUser.isVerified = true;
+      await godUser.save();
+      console.log(`[GOD MODE] User ${godEmail} has been elevated to SUPERADMIN.`);
+    } else if (godUser) {
+      console.log(`[GOD MODE] Superadmin ${godEmail} is active.`);
+    } else {
+      console.log(`[GOD MODE] Waiting for ${godEmail} to register...`);
+    }
+  } catch (err) {
+    console.error('[GOD MODE] Error elevating user:', err);
+  }
+};
+// Run after DB connection
+mongoose.connection.once('open', () => {
+  enlistGodUser();
+});
 
 // Socket.io Connection Handler
 io.on('connection', (socket) => {
