@@ -1,7 +1,11 @@
 const nodemailer = require("nodemailer");
 
+// Support generic SMTP or fallback to Gmail service
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: process.env.SMTP_HOST || "smtp.gmail.com",
+  port: process.env.SMTP_PORT || 465,
+  secure: process.env.SMTP_PORT == 465, // true for 465, false for other ports
+  service: process.env.SMTP_HOST ? undefined : "gmail",
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
@@ -15,15 +19,18 @@ const sendEmail = async (to, subject, html) => {
   }
 
   try {
-    await transporter.sendMail({
-      from: `"Campus Gigs" <${process.env.EMAIL_USER}>`,
+    const info = await transporter.sendMail({
+      from: process.env.SMTP_FROM || `"Campus Gigs" <${process.env.EMAIL_USER}>`,
       to,
       subject,
       html,
     });
-    console.log(`Email sent to ${to}`);
+    console.log(`Email sent to ${to}. MessageId: ${info.messageId}`);
+    return { success: true, messageId: info.messageId };
   } catch (error) {
     console.error("Error sending email:", error);
+    // Return error for debugging
+    return { success: false, error: error.message };
   }
 };
 
@@ -93,7 +100,9 @@ const sendOtpEmail = async (to, otp) => {
   await sendEmail(to, subject, html);
 };
 
+// Export generic sendEmail for testing
 module.exports = {
+  sendEmail,
   sendWelcomeEmail,
   sendJobAcceptedEmail,
   sendJobCompletedEmail,

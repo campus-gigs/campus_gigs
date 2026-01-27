@@ -16,6 +16,14 @@ app.use("/api/reports", require("./routes/reports"));
 app.use("/api/admin", require("./routes/admin"));
 app.use("/api/chat", require("./routes/chat"));
 
+// Test Routes (for debugging)
+app.use("/api/test", require("./routes/test"));
+
+// Health Check (for uptime monitoring to prevent cold starts)
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok", uptime: process.uptime() });
+});
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);
