@@ -7,13 +7,16 @@ const smtpPass = process.env.EMAIL_PASS ? process.env.EMAIL_PASS.replace(/\s+/g,
 // Support generic SMTP or fallback to Gmail service
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || "smtp.gmail.com",
-  port: process.env.SMTP_PORT || 465,
+  port: process.env.SMTP_PORT || 587, // Default to 587 (STARTTLS) which is more reliable on cloud
   secure: process.env.SMTP_PORT == 465, // true for 465, false for other ports
   service: process.env.SMTP_HOST ? undefined : "gmail",
   auth: {
     user: smtpUser,
     pass: smtpPass,
   },
+  tls: {
+    rejectUnauthorized: false // Helps prevents handshake failures on some cloud networks
+  }
 });
 
 const sendEmail = async (to, subject, html) => {
