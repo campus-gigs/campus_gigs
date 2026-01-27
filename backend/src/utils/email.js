@@ -5,7 +5,10 @@ const resend = new Resend(process.env.EMAIL_PASS);
 const sendEmail = async (to, subject, html) => {
   try {
     const fromName = process.env.EMAIL_USER === 'resend' ? 'Campus Gigs' : 'Campus Gigs Admin';
-    const fromEmail = 'onboarding@resend.dev';
+
+    // NOW USING YOUR VERIFIED DOMAIN!
+    // This allows sending to ANY email address (students, etc.)
+    const fromEmail = 'noreply@campusgigs.site';
 
     console.log(`[Email] Sending to: ${to} via Resend HTTP API...`);
 
