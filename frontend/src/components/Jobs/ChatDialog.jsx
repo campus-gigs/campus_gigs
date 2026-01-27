@@ -128,10 +128,11 @@ const ChatDialog = ({ job, isOpen, onClose }) => {
                         <Button
                             type="submit"
                             disabled={sending || !newMessage.trim()}
+                            variant="ghost"
                             size="icon"
-                            className="rounded-full w-12 h-12 shrink-0 shadow-md flex items-center justify-center p-0"
+                            className="rounded-full w-12 h-12 shrink-0 hover:bg-primary/10"
                         >
-                            <Send className="w-5 h-5" />
+                            <Send className="w-6 h-6 text-primary fill-primary rotate-45 mr-1" />
                         </Button>
                     </form>
                 </div>

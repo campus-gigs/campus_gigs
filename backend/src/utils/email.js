@@ -2,17 +2,6 @@ const { Resend } = require('resend');
 
 const resend = new Resend(process.env.EMAIL_PASS);
 
-// This matches your deployed BACKEND URL where logo.svg is now served
-const LOGO_URL = "https://campus-gigs.onrender.com/logo.svg";
-
-// Common style for the logo header
-const logoHeader = `
-  <div style="margin-bottom: 20px; text-align: center;">
-    <img src="${LOGO_URL}" alt="Campus Gigs Logo" width="50" height="50" style="background-color: #FF5A1F; padding: 8px; border-radius: 8px;" />
-    <h1 style="color: #FF5A1F; font-family: sans-serif; font-size: 24px; margin-top: 10px;">Campus Gigs</h1>
-  </div>
-`;
-
 const sendEmail = async (to, subject, htmlContent) => {
   try {
     const fromName = process.env.EMAIL_USER === 'resend' ? 'Campus Gigs' : 'Campus Gigs Admin';
@@ -20,10 +9,9 @@ const sendEmail = async (to, subject, htmlContent) => {
 
     console.log(`[Email] Sending to: ${to} via Resend HTTP API...`);
 
-    // Wrap content in a nice container with the logo
+    // Basic wrapper without the logo
     const fullHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-        ${logoHeader}
         <div style="padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px; background-color: #ffffff;">
           ${htmlContent}
         </div>
