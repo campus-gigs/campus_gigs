@@ -36,10 +36,12 @@ const AdminPanel = () => {
   }, []);
 
   // Fetch tab data when active tab changes
+  // Fetch tab data when active tab changes
   useEffect(() => {
     if (activeTab === 'users' && users.length === 0) fetchUsers();
     if (activeTab === 'jobs' && jobs.length === 0) fetchJobs();
     if (activeTab === 'reports' && reports.length === 0) fetchReports();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
   const fetchStats = async () => {
