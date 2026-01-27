@@ -18,6 +18,10 @@ const io = socketIo(server, {
 // Attach io to app so routes can use it
 app.set('io', io);
 
+// Track online users (UserId -> SocketId)
+const onlineUsers = new Map();
+app.set('onlineUsers', onlineUsers);
+
 connectDB();
 
 app.use(cors());
@@ -40,12 +44,23 @@ app.use("/api/test", require("./routes/test"));
 io.on('connection', (socket) => {
   console.log('New client connected:', socket.id);
 
+  // Handle user identification
+  const userId = socket.handshake.query.userId;
+  if (userId) {
+    onlineUsers.set(userId, socket.id);
+    console.log(`User ${userId} is online (Socket: ${socket.id})`);
+  }
+
   socket.on('join_chat', (jobId) => {
     socket.join(jobId);
     console.log(`Socket ${socket.id} joined room: ${jobId}`);
   });
 
   socket.on('disconnect', () => {
+    if (userId) {
+      onlineUsers.delete(userId);
+      console.log(`User ${userId} went offline`);
+    }
     console.log('Client disconnected:', socket.id);
   });
 });

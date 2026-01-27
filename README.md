@@ -1,255 +1,159 @@
-# Campus Gigs - Student Job Marketplace
+# 🎓 Campus Gigs
 
-A premium frontend-only React application for a student-to-student campus job marketplace.
+**The Safe, Verified Freelance Marketplace for Students.**
 
-## 🎯 Overview
+Campus Gigs connects students who need help with tasks to students who want to earn extra cash. Built with safety and trust in mind, featuring verified `.edu` email access and real-time communication.
 
-Campus Gigs is a modern, production-ready platform where college students can post and find short-term gigs, tasks, and part-time work opportunities on campus.
+![Campus Gigs Landing Page](https://via.placeholder.com/800x400?text=Campus+Gigs+Hero+Image)
+*(Replace with actual screenshot)*
 
-## ✨ Features
+---
 
-### For Students
-- **Browse Jobs**: View available gigs with search and category filters
-- **Post Jobs**: Create job listings with details like payment, duration, and location
-- **Apply for Jobs**: Apply to jobs that match your skills and interests
-- **Job Management**: Track posted and accepted jobs with status updates
-- **Chat System**: Simple message thread between job poster and accepted worker
-- **Profile Management**: Update personal information and preferences
-- **Reporting**: Report inappropriate jobs or users
+## 🚀 Tech Stack
 
-### For Admins
-- **Admin Dashboard**: Platform statistics and overview
-- **User Management**: Ban/unban users
-- **Job Moderation**: Delete inappropriate job postings
-- **Reports Management**: Review and resolve user reports
+**Frontend:**
+*   **React (Vite):** Fast, modern UI library.
+*   **Tailwind CSS:** Utility-first styling for beautiful customized designs.
+*   **Shadcn/UI:** Premium, accessible UI components (based on Radix UI).
+*   **Lucide React:** Clean, consistent iconography.
+*   **Socket.io Client:** Real-time bi-directional event communication.
 
-### Job Lifecycle
-Jobs progress through the following states:
-1. **POSTED** - Job is available for applications
-2. **APPLIED** - Students have applied
-3. **ACCEPTED** - Poster has accepted a worker
-4. **IN_PROGRESS** - Work has started
-5. **COMPLETED** - Job is finished
+**Backend:**
+*   **Node.js & Express:** Robust REST API server.
+*   **MongoDB (Mongoose):** NoSQL database for flexible data modeling.
+*   **Socket.io:** WebSocket server for instant chat.
+*   **Resend:** Reliable email delivery service (Transactional emails).
+*   **JWT (JSON Web Tokens):** Secure stateless authentication.
 
-## 🎨 Design Features
+---
 
-- **Modern UI**: Clean, minimal design inspired by Linear, Stripe, and Vercel
-- **Orange Theme**: Energetic "Electric Tangerine" (#FF5A1F) accent color
-- **Dark Mode**: Full dark mode support
-- **Responsive**: Mobile-first design that works on all devices
-- **Premium Typography**: Outfit font for headings, Inter for body text
-- **Smooth Animations**: Hover effects, transitions, and micro-interactions
-- **Generous Spacing**: Clean layout with proper visual hierarchy
+## ✨ Key Features
 
-## 🛠️ Tech Stack
+1.  **Verified Student Access:** Signup requires a valid `.edu` email address to ensure a safe campus community.
+2.  **Job Marketplace:**
+    *   **Post Gigs:** Students can post jobs (Moved-in help, Tutoring, Design, etc.) with a budget and deadline.
+    *   **Apply & Accept:** Efficient workflow to hire the right person.
+3.  **Real-Time Chat:**
+    *   Instant messaging between Client and Worker using **Socket.io**.
+    *   Typing indicators and live updates without refreshing.
+4.  **Professional Notifications:**
+    *   Branded HTML emails for Account Verification, Job Updates, and New Messages.
+    *   CSS-only logo design ensures emails look great on all clients.
+5.  **Review System:**
+    *   5-Star rating system to build trust.
+    *   Workers earn a reputation score displayed on their profile.
+6.  **Modern UI/UX:**
+    *   **Dark Mode:** Fully supported system-wide dark theme.
+    *   **Mobile Responsive:** Works perfectly on phones with a native-app feel (Drawer menu, touch targets).
 
-- **React 19** - Frontend framework
-- **React Router DOM 7** - Client-side routing
-- **Tailwind CSS** - Utility-first styling
-- **shadcn/ui** - Premium component library
-- **Lucide React** - Icon library
-- **Axios** - API communication
-- **Sonner** - Toast notifications
-- **Context API** - State management
+---
 
-## 📁 Project Structure
-
-```
-src/
-├── components/
-│   ├── Auth/
-│   │   ├── LoginPage.jsx
-│   │   └── SignupPage.jsx
-│   ├── Layout/
-│   │   ├── DashboardLayout.jsx
-│   │   ├── Sidebar.jsx
-│   │   └── Header.jsx
-│   ├── Dashboard/
-│   │   ├── JobBoard.jsx
-│   │   └── ProfilePage.jsx
-│   ├── Jobs/
-│   │   ├── PostJobSheet.jsx
-│   │   ├── JobDetailsDialog.jsx
-│   │   ├── MyJobsPage.jsx
-│   │   ├── ReportDialog.jsx
-│   │   └── ChatDialog.jsx
-│   ├── Admin/
-│   │   ├── AdminPanel.jsx
-│   │   └── ReportsPage.jsx
-│   └── ui/
-│       └── (shadcn components)
-├── context/
-│   └── AuthContext.jsx
-├── utils/
-│   ├── api.js
-│   └── mockData.js
-├── App.jsx
-├── App.css
-├── index.js
-└── index.css
-```
-
-## 🚀 Getting Started
+## 🛠️ Setup & Installation
 
 ### Prerequisites
-- Node.js 18+
-- Yarn package manager
+*   Node.js (v16+)
+*   MongoDB (Local or Atlas URI)
 
-### Installation
-
-1. Clone the repository
+### 1. Clone the Repository
 ```bash
-cd /app/frontend
+git clone https://github.com/campus-gigs/campus_gigs.git
+cd campus-gigs
 ```
 
-2. Install dependencies
+### 2. Backend Setup
 ```bash
-yarn install
+cd backend
+npm install
 ```
 
-3. Start the development server
+Create a `.env` file in the `backend` folder:
+```env
+PORT=5000
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_super_secret_key
+EMAIL_USER=resend
+EMAIL_PASS=your_resend_api_key
+clientURL=http://localhost:3000
+```
+*Tip: Get a free API key from [Resend.com](https://resend.com).*
+
+Start the Server:
 ```bash
-yarn start
+npm start
+# Server runs on http://localhost:5000
 ```
 
-4. Open http://localhost:3000 in your browser
+### 3. Frontend Setup
+```bash
+cd frontend
+npm install
+```
 
-## 🔐 Demo Credentials
+Create a `.env` file in the `frontend` folder:
+```env
+REACT_APP_BACKEND_URL=http://localhost:5000
+```
 
-### Student Account
-- Email: `student@campusgigs.com`
-- Password: `student123`
+Start the React App:
+```bash
+npm start
+# App runs on http://localhost:3000
+```
 
-### Admin Account
-- Email: `admin@campusgigs.com`
-- Password: `admin123`
+---
 
-## 📱 Key Pages
+## 📂 Project Structure
 
-### Authentication
-- `/` - Login page with demo login buttons
-- `/signup` - User registration
+```text
+campus-gigs/
+├── backend/                # Express Server
+│   ├── src/
+│   │   ├── config/         # DB Connection
+│   │   ├── middleware/     # Auth & Error handling
+│   │   ├── models/         # Mongoose Schemas (User, Job, Message)
+│   │   ├── routes/         # API Endpoints
+│   │   ├── utils/          # Helpers (Email, etc.)
+│   │   └── server.js       # Entry point (Http + Socket.io)
+│   └── package.json
+│
+└── frontend/               # React Application
+    ├── public/             # Static Assets (Logo, Favicon)
+    ├── src/
+    │   ├── components/     # UI Components (Chat, Jobs, Layout)
+    │   ├── context/        # Global State (AuthContext)
+    │   ├── pages/          # Full Pages (Landing, Dashboard)
+    │   ├── App.jsx         # Routing Logic
+    │   └── index.css       # Tailwind & Global Styles
+    └── package.json
+```
 
-### Dashboard (Protected)
-- `/dashboard` - Job board with search and filters
-- `/dashboard/my-jobs` - Posted and accepted jobs (tabbed view)
-- `/dashboard/profile` - User profile management
+---
 
-### Admin (Admin Only)
-- `/dashboard/admin` - Admin panel with stats and moderation
-- `/dashboard/reports` - Report management
+## 🚢 Deployment
 
-## 🎯 Component Features
+**Backend (Render/Heroku):**
+1.  Connect your repo.
+2.  Set Build Command: `npm install`
+3.  Set Start Command: `node src/server.js`
+4.  Add Environment Variables from your `.env`.
 
-### JobBoard
-- Grid layout with responsive cards
-- Real-time search filtering
-- Category-based filtering
-- Empty states for no results
-- Loading skeletons
-- Job status badges
+**Frontend (Vercel/Netlify):**
+1.  Connect your repo.
+2.  Set Root Directory to `frontend`.
+3.  Set Build Command: `npm run build`
+4.  Set Output Directory: `build` (or `dist` for Vite).
+5.  Add `REACT_APP_BACKEND_URL` to Environment Variables.
 
-### PostJobSheet
-- Slide-over sheet component
-- Form validation
-- Payment, duration, location fields
-- Category selection
-- Toast notifications on success
-
-### JobDetailsDialog
-- Full job information display
-- Action buttons based on user role and job status
-- Apply, Start, Complete job actions
-- Chat access for accepted workers
-- Delete option for job owners and admins
-- Report functionality
-
-### MyJobsPage
-- Tabbed interface (Posted/Accepted)
-- Job cards with status
-- Empty states
-- Click to view details
-
-### AdminPanel
-- Platform statistics cards
-- User management with ban/unban
-- Job moderation with delete
-- Clean, organized layout
-
-### ReportsPage
-- Report cards with details
-- Resolve or dismiss actions
-- Filter by status
-- Pending reports highlighted
-
-## 🎨 Design System
-
-### Colors
-- **Primary**: #FF5A1F (Electric Tangerine)
-- **Background Light**: #FAFAFA
-- **Background Dark**: #0A0A0A
-- **Status Colors**: Green (Open), Purple (Accepted), Yellow (In Progress)
-
-### Typography
-- **Headings**: Outfit (500, 600, 700)
-- **Body**: Inter (400, 500)
-- **Tracking**: Tight for headings, normal for body
-
-### Components
-- **Buttons**: Pill-shaped with hover animations
-- **Cards**: Rounded corners (rounded-xl), subtle shadows
-- **Inputs**: Clean with focus states
-- **Badges**: Status-based color coding
-
-## 🔌 Backend Integration
-
-The app is ready to connect to a backend API. All API calls are centralized in `/src/utils/api.js`:
-
-- `authAPI` - Authentication endpoints
-- `jobAPI` - Job CRUD operations
-- `reviewAPI` - Review system
-- `reportAPI` - Reporting system
-- `adminAPI` - Admin operations
-- `chatAPI` - Messaging system
-
-Currently uses mock data for demonstration purposes when backend is unavailable.
-
-## 📝 Notes
-
-- This is a **frontend-only** implementation
-- Backend is expected to be developed separately
-- Mock data provides a fully functional demo experience
-- All routes are properly protected with authentication
-- Admin routes have additional role-based access control
-- Chat is only available between poster and accepted worker
-- Dark mode preference persists across sessions
-
-## 🎯 Production Checklist
-
-Before deploying to production:
-
-1. ✅ Connect to real backend API
-2. ✅ Remove mock data fallbacks
-3. ✅ Add proper error boundaries
-4. ✅ Implement analytics
-5. ✅ Add SEO meta tags
-6. ✅ Optimize images and assets
-7. ✅ Add loading indicators for all async operations
-8. ✅ Implement proper form validation
-9. ✅ Add accessibility improvements
-10. ✅ Test on multiple devices and browsers
+---
 
 ## 🤝 Contributing
 
-This is a production-ready frontend that follows best practices:
+1.  Fork the Project
+2.  Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3.  Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4.  Push to the Branch (`git push origin feature/AmazingFeature`)
+5.  Open a Pull Request
 
-- Component-based architecture
-- Proper separation of concerns
-- Reusable components
-- Consistent naming conventions
-- Clean code structure
-- Comprehensive data-testid attributes for testing
+---
 
-## 📄 License
-
-Built with ❤️ for Campus Gigs
+*Built with ❤️ for Students.*

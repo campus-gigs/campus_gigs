@@ -64,30 +64,48 @@ router.post('/:jobId', auth, async (req, res) => {
         const message = await newMessage.save();
         await message.populate('sender', 'name');
 
-        // Real-time: Emit to the room
+        // Real-time: Emit to the room (for chat window)
         const io = req.app.get('io');
         io.to(req.params.jobId).emit('receive_message', message);
 
-        // Send email notification to the recipient (Async, don't await blocking)
-        // We need to fetch the job with participants' emails to know who to send to
+        // Smart Logic: Check if recipient is online
+        const onlineUsers = req.app.get('onlineUsers');
+
+        // We need to fetch the job with participants' emails/ids to know who to send to
         const jobWithEmails = await Job.findById(req.params.jobId)
             .populate('postedBy', 'email')
             .populate('acceptedBy', 'email');
 
         if (jobWithEmails) {
             let recipientEmail;
+            let recipientId;
 
             if (req.user.id === jobWithEmails.postedBy._id.toString()) {
                 // Sender is owner, send to worker
                 recipientEmail = jobWithEmails.acceptedBy?.email;
+                recipientId = jobWithEmails.acceptedBy?._id.toString();
             } else {
                 // Sender is worker, send to owner
                 recipientEmail = jobWithEmails.postedBy?.email;
+                recipientId = jobWithEmails.postedBy?._id.toString();
             }
 
-            if (recipientEmail) {
-                // Fire and forget email to avoid delaying the response
-                sendNewMessageEmail(recipientEmail, message.sender.name, content).catch(err => console.error('Email send failed', err));
+            if (recipientId) {
+                const recipientSocketId = onlineUsers.get(recipientId);
+
+                if (recipientSocketId) {
+                    // User is ONLINE: Emit notification to their sidebar (Red Dot)
+                    io.to(recipientSocketId).emit('new_message_notification', {
+                        jobId: req.params.jobId,
+                        senderName: message.sender.name,
+                        content: content
+                    });
+                    console.log(`[Smart Notification] User ${recipientId} is online. Notification sent via Socket.`);
+                } else if (recipientEmail) {
+                    // User is OFFLINE: Send Email
+                    console.log(`[Smart Notification] User ${recipientId} is offline. Sending Email.`);
+                    sendNewMessageEmail(recipientEmail, message.sender.name, content).catch(err => console.error('Email send failed', err));
+                }
             }
         }
 

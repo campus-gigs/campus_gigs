@@ -1,5 +1,5 @@
-import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
   Briefcase,
   LayoutDashboard,
@@ -13,20 +13,58 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../ui/button';
 import { cn } from '../../lib/utils';
+import { io } from 'socket.io-client';
 
 const Sidebar = () => {
   const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [hasUnread, setHasUnread] = useState(false);
+  const socketRef = useRef(null);
 
   const handleLogout = () => {
+    if (socketRef.current) socketRef.current.disconnect();
     logout();
     navigate('/');
   };
 
+  useEffect(() => {
+    if (user?._id) {
+      // Connect to Socket.io for notifications (and online status)
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000';
+      socketRef.current = io(backendUrl, {
+        query: { userId: user._id }
+      });
+
+      socketRef.current.on('new_message_notification', (data) => {
+        // If we are NOT currently on the chat page, show the red dot
+        if (!location.pathname.includes('/dashboard/chat')) {
+          setHasUnread(true);
+        }
+      });
+
+      return () => {
+        if (socketRef.current) socketRef.current.disconnect();
+      };
+    }
+  }, [user?._id, location.pathname]);
+
+  // Clear notification when visiting chat
+  useEffect(() => {
+    if (location.pathname.includes('/dashboard/chat')) {
+      setHasUnread(false);
+    }
+  }, [location.pathname]);
+
   const navItems = [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Job Board' },
     { to: '/dashboard/my-jobs', icon: ClipboardList, label: 'My Jobs' },
-    { to: '/dashboard/chat', icon: MessageCircle, label: 'Messages' },
+    {
+      to: '/dashboard/chat',
+      icon: MessageCircle,
+      label: 'Messages',
+      showDot: hasUnread
+    },
     { to: '/dashboard/favorites', icon: Heart, label: 'Favorites' },
     { to: '/dashboard/profile', icon: User, label: 'Profile' },
   ];
@@ -36,7 +74,7 @@ const Sidebar = () => {
   }
 
   return (
-    <aside className="w-64 bg-card border-r h-screen flex flex-col">
+    <aside className="w-64 bg-card border-r h-screen flex flex-col transition-all duration-300">
       {/* Logo */}
       <div className="p-6 border-b">
         <div className="flex items-center gap-2">
@@ -56,14 +94,19 @@ const Sidebar = () => {
             end={item.to === '/dashboard'}
             className={({ isActive }) =>
               cn(
-                'flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all',
+                'flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative',
                 isActive
                   ? 'bg-primary text-white'
                   : 'text-muted-foreground hover:bg-muted hover:text-foreground'
               )
             }
           >
-            <item.icon className="w-5 h-5" />
+            <div className="relative">
+              <item.icon className="w-5 h-5" />
+              {item.showDot && (
+                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-card" />
+              )}
+            </div>
             {item.label}
           </NavLink>
         ))}
