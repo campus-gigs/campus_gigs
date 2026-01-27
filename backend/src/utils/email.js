@@ -1,5 +1,9 @@
 const nodemailer = require("nodemailer");
 
+// Sanitize credentials (strip whitespace that often comes with copy-pasting)
+const smtpUser = process.env.EMAIL_USER ? process.env.EMAIL_USER.trim() : "";
+const smtpPass = process.env.EMAIL_PASS ? process.env.EMAIL_PASS.replace(/\s+/g, "") : "";
+
 // Support generic SMTP or fallback to Gmail service
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || "smtp.gmail.com",
@@ -7,20 +11,20 @@ const transporter = nodemailer.createTransport({
   secure: process.env.SMTP_PORT == 465, // true for 465, false for other ports
   service: process.env.SMTP_HOST ? undefined : "gmail",
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+    user: smtpUser,
+    pass: smtpPass,
   },
 });
 
 const sendEmail = async (to, subject, html) => {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+  if (!smtpUser || !smtpPass) {
     console.warn("Email credentials not found. Skipping email.");
-    return;
+    return { success: false, error: "Email credentials (EMAIL_USER/EMAIL_PASS) are missing in Render environment variables." };
   }
 
   try {
     const info = await transporter.sendMail({
-      from: process.env.SMTP_FROM || `"Campus Gigs" <${process.env.EMAIL_USER}>`,
+      from: process.env.SMTP_FROM || `"Campus Gigs" <${smtpUser}>`,
       to,
       subject,
       html,
