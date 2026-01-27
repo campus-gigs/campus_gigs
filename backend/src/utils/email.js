@@ -5,11 +5,11 @@ const smtpUser = process.env.EMAIL_USER ? process.env.EMAIL_USER.trim() : "";
 const smtpPass = process.env.EMAIL_PASS ? process.env.EMAIL_PASS.replace(/\s+/g, "") : "";
 
 // Support generic SMTP or fallback to Gmail service
+// Support generic SMTP or fallback to Gmail service
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || "smtp.gmail.com",
   port: process.env.SMTP_PORT || 587, // Default to 587 (STARTTLS) which is more reliable on cloud
-  secure: process.env.SMTP_PORT == 465, // true for 465, false for other ports
-  service: process.env.SMTP_HOST ? undefined : "gmail",
+  secure: false, // Must be false for port 587 (STARTTLS)
   auth: {
     user: smtpUser,
     pass: smtpPass,
