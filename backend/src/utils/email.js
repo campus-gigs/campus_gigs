@@ -1,122 +1,37 @@
-const nodemailer = require("nodemailer");
+const { Resend } = require('resend');
 
-// Sanitize credentials (strip whitespace that often comes with copy-pasting)
-const smtpUser = process.env.EMAIL_USER ? process.env.EMAIL_USER.trim() : "";
-const smtpPass = process.env.EMAIL_PASS ? process.env.EMAIL_PASS.replace(/\s+/g, "") : "";
-
-// Support generic SMTP or fallback to Gmail service
-// Support generic SMTP or fallback to Gmail service
-console.log(`[Email Setup] Host: ${process.env.SMTP_HOST || "smtp.gmail.com"} | Port: ${process.env.SMTP_PORT || 587} | Secure: false`);
-
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || "smtp.gmail.com",
-  port: process.env.SMTP_PORT || 587,
-  secure: false,
-  auth: {
-    user: smtpUser,
-    pass: smtpPass,
-  },
-  tls: {
-    rejectUnauthorized: false
-  },
-  logger: true, // Log to console
-  debug: true   // Include SMTP traffic in logs
-});
+// Initialize Resend with the API Key (stored in EMAIL_PASS)
+// We use EMAIL_PASS because that's what the user already set in Render.
+const resend = new Resend(process.env.EMAIL_PASS);
 
 const sendEmail = async (to, subject, html) => {
-  if (!smtpUser || !smtpPass) {
-    console.warn("Email credentials not found. Skipping email.");
-    return { success: false, error: "Email credentials (EMAIL_USER/EMAIL_PASS) are missing in Render environment variables." };
-  }
-
   try {
-    const info = await transporter.sendMail({
-      from: process.env.SMTP_FROM || `"Campus Gigs" <${smtpUser}>`,
-      to,
-      subject,
-      html,
+    const fromName = process.env.EMAIL_USER === 'resend' ? 'Campus Gigs' : 'Campus Gigs Admin';
+    // Use the default 'onboarding' domain provided by Resend for free tier if no custom domain
+    // Or allow customization if they verified one. 
+    // Safest default for new accounts is 'onboarding@resend.dev'
+    const fromEmail = 'onboarding@resend.dev';
+
+    console.log(`[Email] Sending to: ${to} via Resend HTTP API...`);
+
+    const { data, error } = await resend.emails.send({
+      from: `${fromName} <${fromEmail}>`,
+      to: [to],
+      subject: subject,
+      html: html,
     });
-    console.log(`Email sent to ${to}. MessageId: ${info.messageId}`);
-    return { success: true, messageId: info.messageId };
+
+    if (error) {
+      console.error('[Email] Resend API Error:', error);
+      return false;
+    }
+
+    console.log('[Email] Sent successfully via Resend SDK! ID:', data.id);
+    return true;
   } catch (error) {
-    console.error("Error sending email:", error);
-    // Return error for debugging
-    return { success: false, error: error.message };
+    console.error('[Email] Unexpected Error:', error);
+    return false;
   }
 };
 
-const sendWelcomeEmail = async (to, name) => {
-  const subject = "Welcome to Campus Gigs!";
-  const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2 style="color: #4F46E5;">Welcome, ${name}!</h2>
-      <p>Thanks for joining Campus Gigs. We're excited to have you on board.</p>
-      <p>Start exploring jobs or post one today!</p>
-      <p>Best regards,<br>The Campus Gigs Team</p>
-    </div>
-  `;
-  await sendEmail(to, subject, html);
-};
-
-const sendJobAcceptedEmail = async (to, jobTitle, workerName) => {
-  const subject = "Your Job Has Been Accepted!";
-  const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2 style="color: #10B981;">Good News!</h2>
-      <p>Your job "<strong>${jobTitle}</strong>" has been accepted by <strong>${workerName}</strong>.</p>
-      <p>You can now chat with them to coordinate the details.</p>
-      <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}/dashboard" style="display: inline-block; background-color: #4F46E5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Go to Dashboard</a>
-    </div>
-  `;
-  await sendEmail(to, subject, html);
-};
-
-const sendJobCompletedEmail = async (to, jobTitle, workerName) => {
-  const subject = "Job Completed!";
-  const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2 style="color: #4F46E5;">Job Completed</h2>
-      <p><strong>${workerName}</strong> has marked "<strong>${jobTitle}</strong>" as completed.</p>
-      <p>Please review their work and leave a rating.</p>
-      <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}/dashboard" style="display: inline-block; background-color: #4F46E5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Review Now</a>
-    </div>
-  `;
-  await sendEmail(to, subject, html);
-};
-
-const sendNewMessageEmail = async (to, senderName, messagePreview) => {
-  const subject = `New Message from ${senderName}`;
-  const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h3 style="color: #4F46E5;">New Message</h3>
-      <p><strong>${senderName}</strong> sent you a message:</p>
-      <blockquote style="border-left: 4px solid #E5E7EB; padding-left: 10px; color: #4B5563;">
-        ${messagePreview}
-      </blockquote>
-      <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}/dashboard/chat" style="display: inline-block; background-color: #4F46E5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Reply Now</a>
-    </div>
-  `;
-  await sendEmail(to, subject, html);
-};
-
-const sendOtpEmail = async (to, otp) => {
-  const subject = "Verify your email";
-  const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2 style="color: #4F46E5;">Verify your email</h2>
-      <p>Your OTP is: <strong>${otp}</strong></p>
-      <p>This OTP is valid for 10 minutes.</p>
-    </div>
-  `;
-  await sendEmail(to, subject, html);
-};
-
-// Export generic sendEmail for testing
-module.exports = {
-  sendEmail,
-  sendWelcomeEmail,
-  sendJobAcceptedEmail,
-  sendJobCompletedEmail,
-  sendNewMessageEmail,
-  sendOtpEmail,
-};
+module.exports = sendEmail;
