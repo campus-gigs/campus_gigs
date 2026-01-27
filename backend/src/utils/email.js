@@ -2,8 +2,8 @@ const { Resend } = require('resend');
 
 const resend = new Resend(process.env.EMAIL_PASS);
 
-// This matches your deployed frontend URL where logo.svg lives
-const LOGO_URL = "https://campus-gigs.site/logo.svg";
+// This matches your deployed BACKEND URL where logo.svg is now served
+const LOGO_URL = "https://campus-gigs.onrender.com/logo.svg";
 
 // Common style for the logo header
 const logoHeader = `

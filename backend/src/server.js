@@ -9,6 +9,9 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 
+// Serve static files (like logo.svg) from the public folder
+app.use(express.static('public'));
+
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/jobs", require("./routes/jobs"));
 app.use("/api/profile", require("./routes/profile"));
