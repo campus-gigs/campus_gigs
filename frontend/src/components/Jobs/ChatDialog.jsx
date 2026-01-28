@@ -13,7 +13,7 @@ import { chatAPI } from '../../utils/api';
 import { toast } from 'sonner';
 import { io } from 'socket.io-client';
 
-const ChatDialog = ({ job, isOpen, onClose }) => {
+const ChatDialog = ({ job, recipient, isOpen, onClose }) => {
     const { user } = useAuth();
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
@@ -28,38 +28,65 @@ const ChatDialog = ({ job, isOpen, onClose }) => {
 
     const loadMessages = React.useCallback(async () => {
         try {
-            const response = await chatAPI.getMessages(job._id);
-            setMessages(response.data);
+            let response;
+            if (job?._id) {
+                response = await chatAPI.getMessages(job._id);
+            } else if (recipient?._id) {
+                response = await chatAPI.getDirectMessages(recipient._id);
+            }
+            if (response) {
+                setMessages(response.data);
+            }
         } catch (error) {
             console.error('Failed to load messages:', error);
         } finally {
             setLoading(false);
         }
-    }, [job?._id]);
+    }, [job?._id, recipient?._id]);
 
     useEffect(() => {
-        if (isOpen && job?._id) {
+        if (isOpen && (job?._id || recipient?._id)) {
             loadMessages();
 
             // Initialize Socket.io connection
-            // Uses the same backend URL as the API
             const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000';
-            socketRef.current = io(backendUrl);
+            socketRef.current = io(backendUrl, {
+                query: { userId: user._id }
+            });
 
-            // Join the specific chat room for this job
-            socketRef.current.emit('join_chat', job._id);
+            // Join Room: Job ID for jobs, User ID for DMs (handshake logic usually handles connecting to own room, 
+            // but for DMs we might listen to 'receive_direct_message' which is emitted to User's socket)
+            if (job?._id) {
+                socketRef.current.emit('join_chat', job._id);
+            } else {
+                // For DMs, we rely on the backend emitting to our user ID (socket)
+                // Ensure we identify ourselves if needed, or if the socket connection is authenticated naturally
+            }
 
             // Listen for incoming messages
-            socketRef.current.on('receive_message', (message) => {
-                setMessages((prevMessages) => {
-                    // Check if message already exists to verify against potential duplicates
-                    if (prevMessages.some(m => m._id === message._id)) return prevMessages;
-                    return [...prevMessages, message];
-                });
+            const handleMessage = (message) => {
+                // Verify context: 
+                // If Job Chat: message.job === job._id
+                // If DM: (message.sender === recipient._id || message.recipient === recipient._id) && !message.job
 
-                // If the message is from me, scrollToBottom is handled by sending logic or effect
-                // If from other, you might want to show a toast or auto-scroll
-            });
+                const isRelevantJob = job && message.job === job._id;
+                const isRelevantDM = recipient && (
+                    (message.sender._id === recipient._id) ||
+                    (message.sender === recipient._id) ||
+                    (message.recipient === recipient._id) ||
+                    (message.recipient._id === recipient._id)
+                ) && !message.job;
+
+                if (isRelevantJob || isRelevantDM) {
+                    setMessages((prevMessages) => {
+                        if (prevMessages.some(m => m._id === message._id)) return prevMessages;
+                        return [...prevMessages, message];
+                    });
+                }
+            };
+
+            socketRef.current.on('receive_message', handleMessage);
+            socketRef.current.on('receive_direct_message', handleMessage);
 
             return () => {
                 if (socketRef.current) {
@@ -67,7 +94,7 @@ const ChatDialog = ({ job, isOpen, onClose }) => {
                 }
             };
         }
-    }, [isOpen, job?._id, loadMessages]);
+    }, [isOpen, job, recipient, loadMessages, user._id]);
 
     useEffect(() => {
         scrollToBottom();
@@ -77,13 +104,13 @@ const ChatDialog = ({ job, isOpen, onClose }) => {
         e.preventDefault();
         if (!newMessage.trim()) return;
 
-        // Optimistic UI update could go here, but for now we wait for server confirmation/socket echo
-        // Actually, backend emits 'receive_message', so we can wait for that or just loadMessages().
-        // Let's rely on the socket event to update the UI for consistency.
-
         setSending(true);
         try {
-            await chatAPI.sendMessage(job._id, newMessage);
+            if (job?._id) {
+                await chatAPI.sendMessage(job._id, newMessage);
+            } else if (recipient?._id) {
+                await chatAPI.sendDirectMessage(recipient._id, newMessage);
+            }
             setNewMessage('');
             // No need to call loadMessages() manually, the socket event should trigger update
         } catch (error) {
@@ -93,7 +120,7 @@ const ChatDialog = ({ job, isOpen, onClose }) => {
         }
     };
 
-    if (!job) return null;
+    if (!job && !recipient) return null;
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -101,7 +128,7 @@ const ChatDialog = ({ job, isOpen, onClose }) => {
                 <DialogHeader className="p-4 border-b">
                     <DialogTitle className="flex items-center gap-2">
                         <User className="w-5 h-5" />
-                        Chat: {job.title}
+                        {job ? `Chat: ${job.title}` : `Chat with ${recipient.name}`}
                     </DialogTitle>
                 </DialogHeader>
 

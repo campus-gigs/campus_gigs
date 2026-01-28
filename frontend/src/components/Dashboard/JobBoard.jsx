@@ -38,29 +38,40 @@ const JobBoard = () => {
   const [selectedJob, setSelectedJob] = useState(null);
   const [favorites, setFavorites] = useState([]);
 
-    const fetchJobs = useCallback(async () => {
-    try {
-       const response = await jobAPI.getJobs({ 
-         search, 
-         category: category === 'all' ? '' : category, 
-         sortBy 
-       });
-       setJobs(response.data);
-     } catch (error) {
-       toast.error('Failed to load jobs');
-     } finally {
-       setLoading(false);
-     }
-    }, [search, category, sortBy]);
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
 
-   const fetchFavorites = useCallback(async () => {
-      try {
-        const response = await jobAPI.getFavorites();
-        setFavorites(response.data.map((job) => job._id));
-      } catch (error) {
-        // Silently fail
-      }
-   }, []);
+  // Debounce search
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [search]);
+
+  const fetchJobs = useCallback(async () => {
+    try {
+      const response = await jobAPI.getJobs({
+        search: debouncedSearch,
+        category: category === 'all' ? '' : category,
+        sortBy
+      });
+      // Backend now returns { jobs: [...], currentPage: ... }
+      setJobs(response.data.jobs || []);
+    } catch (error) {
+      toast.error('Failed to load jobs');
+    } finally {
+      setLoading(false);
+    }
+  }, [debouncedSearch, category, sortBy]);
+
+  const fetchFavorites = useCallback(async () => {
+    try {
+      const response = await jobAPI.getFavorites();
+      setFavorites(response.data.map((job) => job._id));
+    } catch (error) {
+      // Silently fail
+    }
+  }, []);
 
   useEffect(() => {
     fetchJobs();

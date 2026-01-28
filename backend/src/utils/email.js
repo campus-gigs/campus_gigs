@@ -1,13 +1,19 @@
-const { Resend } = require('resend');
+const nodemailer = require('nodemailer');
 
-const resend = new Resend(process.env.EMAIL_PASS);
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
 
 const sendEmail = async (to, subject, htmlContent) => {
   try {
-    const fromName = process.env.EMAIL_USER === 'resend' ? 'Campus Gigs' : 'Campus Gigs Admin';
-    const fromEmail = 'noreply@campusgigs.site';
+    const fromName = 'Campus Gigs Admin';
+    const fromEmail = process.env.EMAIL_USER;
 
-    console.log(`[Email] Sending to: ${to} via Resend HTTP API...`);
+    console.log(`[Email] Sending to: ${to} via Nodemailer...`);
 
     // Pro CSS-only Header (No broken images!)
     const headerHtml = `
@@ -33,22 +39,17 @@ const sendEmail = async (to, subject, htmlContent) => {
       </div>
     `;
 
-    const { data, error } = await resend.emails.send({
-      from: `${fromName} <${fromEmail}>`,
-      to: [to],
+    const info = await transporter.sendMail({
+      from: `"${fromName}" <${fromEmail}>`,
+      to: to,
       subject: subject,
       html: fullHtml,
     });
 
-    if (error) {
-      console.error('[Email] Resend API Error:', error);
-      return { success: false, error };
-    }
-
-    console.log('[Email] Sent successfully via Resend SDK! ID:', data.id);
-    return { success: true, messageId: data.id };
+    console.log('[Email] Sent successfully via Nodemailer! ID:', info.messageId);
+    return { success: true, messageId: info.messageId };
   } catch (error) {
-    console.error('[Email] Unexpected Error:', error);
+    console.error('[Email] Nodemailer Error:', error);
     return { success: false, error };
   }
 };

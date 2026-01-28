@@ -38,8 +38,10 @@ const DashboardLayout = () => {
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden transition-opacity"
           onClick={() => setSidebarOpen(false)}
+          role="button"
+          aria-label="Close sidebar"
         />
       )}
 
@@ -48,7 +50,7 @@ const DashboardLayout = () => {
         className={`fixed inset-y-0 left-0 z-50 transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
           } lg:relative lg:translate-x-0 transition-transform duration-200 lg:flex lg:flex-col lg:w-64 border-r bg-card`}
       >
-        <Sidebar />
+        <Sidebar closeSidebar={() => setSidebarOpen(false)} />
       </div>
 
       {/* Main content */}

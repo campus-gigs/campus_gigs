@@ -87,6 +87,9 @@ export const adminAPI = {
 export const chatAPI = {
   getMessages: (jobId) => api.get(`/api/chat/${jobId}`),
   sendMessage: (jobId, content) => api.post(`/api/chat/${jobId}`, { content }),
+  getDirectMessages: (userId) => api.get(`/api/chat/direct/${userId}`),
+  sendDirectMessage: (userId, content) => api.post(`/api/chat/direct/${userId}`, { content }),
+  getDMs: () => api.get('/api/chat/dms'),
 };
 
 export default api;

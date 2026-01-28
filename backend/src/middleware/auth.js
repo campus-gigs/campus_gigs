@@ -8,8 +8,8 @@ module.exports = (req, res, next) => {
   }
 
   // Extract token from "Bearer <token>"
-  const token = authHeader.startsWith("Bearer ") 
-    ? authHeader.slice(7) 
+  const token = authHeader.startsWith("Bearer ")
+    ? authHeader.slice(7)
     : authHeader;
 
   if (!token) {
@@ -21,6 +21,9 @@ module.exports = (req, res, next) => {
     req.user = { id: decoded.id };
     next();
   } catch (err) {
+    if (err.name === 'TokenExpiredError') {
+      return res.status(401).json({ msg: "Token expired" });
+    }
     res.status(401).json({ msg: "Invalid token" });
   }
 };

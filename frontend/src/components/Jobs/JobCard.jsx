@@ -96,4 +96,4 @@ const JobCard = ({ job, onClick, onFavorite, isFavorite, showStatus = false }) =
   );
 };
 
-export default JobCard;
+export default React.memo(JobCard);

@@ -55,11 +55,41 @@ router.get("/", async (req, res) => {
         break;
     }
 
+    // Pagination
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
     const jobs = await Job.find(query)
       .populate("postedBy", "name rating ratingCount")
-      .sort(sort);
+      .sort(sort)
+      .skip(skip)
+      .limit(limit);
 
-    res.json(jobs);
+    const total = await Job.countDocuments(query);
+
+    res.json({
+      jobs,
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
+      totalJobs: total
+    });
+  } catch (err) {
+    res.status(500).json({ msg: "Server error" });
+  }
+});
+
+/* Get favorite jobs - MOVED UP to avoid conflict with /:id */
+router.get("/favorites", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user || !user.favorites || user.favorites.length === 0) {
+      return res.json([]);
+    }
+    const favoriteJobs = await Job.find({ _id: { $in: user.favorites }, status: "open" })
+      .populate("postedBy", "name rating ratingCount")
+      .sort({ createdAt: -1 });
+    res.json(favoriteJobs);
   } catch (err) {
     res.status(500).json({ msg: "Server error" });
   }
@@ -77,6 +107,27 @@ router.get("/my", auth, async (req, res) => {
 
   res.json({ posted, accepted });
 });
+
+/* Get single job details */
+router.get("/:id", async (req, res) => {
+  try {
+    const job = await Job.findById(req.params.id)
+      .populate("postedBy", "name rating ratingCount email phone")
+      .populate("acceptedBy", "name email phone");
+
+    if (!job) return res.status(404).json({ msg: "Job not found" });
+
+    res.json(job);
+  } catch (err) {
+    if (err.kind === 'ObjectId') {
+      return res.status(404).json({ msg: "Job not found" });
+    }
+    res.status(500).json({ msg: "Server error" });
+  }
+});
+
+/* My dashboard */
+
 
 /* Post job */
 router.post("/", auth, async (req, res) => {
@@ -260,20 +311,7 @@ router.post("/:id/favorite", auth, async (req, res) => {
   }
 });
 
-/* Get favorite jobs */
-router.get("/favorites", auth, async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id);
-    if (!user || !user.favorites || user.favorites.length === 0) {
-      return res.json([]);
-    }
-    const favoriteJobs = await Job.find({ _id: { $in: user.favorites }, status: "open" })
-      .populate("postedBy", "name rating ratingCount")
-      .sort({ createdAt: -1 });
-    res.json(favoriteJobs);
-  } catch (err) {
-    res.status(500).json({ msg: "Server error" });
-  }
-});
+// favorites route moved to top
+
 
 module.exports = router;

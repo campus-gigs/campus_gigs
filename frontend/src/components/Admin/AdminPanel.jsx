@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Briefcase, AlertTriangle, TrendingUp, Ban, Trash2, Search, Ghost, MoreVertical, ShieldAlert, UserMinus } from 'lucide-react';
+import { Users, Briefcase, AlertTriangle, TrendingUp, Ban, Trash2, Search, Ghost, MoreVertical, ShieldAlert, UserMinus, MessageCircle } from 'lucide-react';
 import { Card, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -17,6 +17,7 @@ import { adminAPI } from '../../utils/api';
 import { toast } from 'sonner';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import ChatDialog from '../Jobs/ChatDialog';
 
 const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState('users');
@@ -27,8 +28,15 @@ const AdminPanel = () => {
   const [loading, setLoading] = useState(true);
   const [searchUser, setSearchUser] = useState('');
   const [searchJob, setSearchJob] = useState('');
+  const [selectedChatUser, setSelectedChatUser] = useState(null);
+  const [showChat, setShowChat] = useState(false);
   const { login, isSuperAdmin } = useAuth();
   const navigate = useNavigate();
+
+  const handleOpenDirectChat = (user) => {
+    setSelectedChatUser(user);
+    setShowChat(true);
+  };
 
   // Stats are always loaded on mount
   useEffect(() => {
@@ -267,6 +275,16 @@ const AdminPanel = () => {
                       {user.isBanned ? 'Unban' : 'Ban'}
                     </Button>
 
+                    {/* Chat Action */}
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => handleOpenDirectChat(user)}
+                    >
+                      <MessageCircle className="w-4 h-4 mr-1" />
+                      Message
+                    </Button>
+
                     {/* God Mode Menu */}
                     {isSuperAdmin && (
                       <DropdownMenu>
@@ -388,6 +406,14 @@ const AdminPanel = () => {
           )}
         </TabsContent>
       </Tabs>
+
+      {selectedChatUser && (
+        <ChatDialog
+          isOpen={showChat}
+          onClose={() => setShowChat(false)}
+          recipient={selectedChatUser}
+        />
+      )}
     </div>
   );
 };

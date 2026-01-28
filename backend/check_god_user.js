@@ -5,7 +5,11 @@ const User = require('./src/models/User');
 const checkUser = async () => {
     try {
         await mongoose.connect(process.env.MONGO_URI);
-        const email = "arunreddy.k2023@vitstudent.ac.in";
+        const email = process.env.SUPERADMIN_EMAIL;
+        if (!email) {
+            console.log('[VERIFY] No SUPERADMIN_EMAIL set in .env');
+            return;
+        }
         const user = await User.findOne({ email });
 
         if (user) {

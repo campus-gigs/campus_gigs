@@ -15,7 +15,7 @@ import { Button } from '../ui/button';
 import { cn } from '../../lib/utils';
 import { io } from 'socket.io-client';
 
-const Sidebar = () => {
+const Sidebar = ({ closeSidebar }) => {
   const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -25,6 +25,7 @@ const Sidebar = () => {
   const handleLogout = () => {
     if (socketRef.current) socketRef.current.disconnect();
     logout();
+    if (closeSidebar) closeSidebar();
     navigate('/');
   };
 
@@ -77,11 +78,11 @@ const Sidebar = () => {
     <aside className="w-64 bg-card border-r h-screen flex flex-col transition-all duration-300">
       {/* Logo */}
       <div className="p-6 border-b">
-        <div className="flex items-center gap-2">
-          <div className="w-9 h-9 bg-primary rounded-lg flex items-center justify-center">
-            <Briefcase className="w-5 h-5 text-white" />
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center shrink-0 shadow-sm">
+            <Briefcase className="w-6 h-6 text-white" />
           </div>
-          <span className="text-xl font-bold font-display">Campus Gigs</span>
+          <span className="text-xl font-bold font-display tracking-tight text-foreground">Campus Gigs</span>
         </div>
       </div>
 
@@ -92,12 +93,13 @@ const Sidebar = () => {
             key={item.to}
             to={item.to}
             end={item.to === '/dashboard'}
+            onClick={() => closeSidebar && closeSidebar()}
             className={({ isActive }) =>
               cn(
-                'flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative',
+                'flex items-center gap-3 px-4 py-3 min-h-[44px] rounded-lg text-sm font-medium transition-colors relative', // Increased padding and min-height for touch
                 isActive
                   ? 'bg-primary text-white'
-                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground active:bg-muted/80' // Added active state
               )
             }
           >
