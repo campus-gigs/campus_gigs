@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/button';
-import { Briefcase, Shield, Zap, MessageCircle, Moon, Sun, Menu, X } from 'lucide-react';
-
+import { Briefcase, Shield, Zap, MessageCircle, Moon, Sun } from 'lucide-react';
 const LandingPage = () => {
     const [isDark, setIsDark] = useState(false);
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     useEffect(() => {
         // Check system preference or saved theme
@@ -34,7 +32,7 @@ const LandingPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-background flex flex-col text-foreground transition-colors duration-300">
+        <div className="min-h-screen bg-background flex flex-col text-foreground transition-colors duration-300 overflow-y-auto h-screen">
             {/* Header */}
             <header className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -59,28 +57,15 @@ const LandingPage = () => {
                         </Link>
                     </div>
 
-                    {/* Mobile Menu Toggle */}
+                    {/* Mobile Menu Toggle (Theme Only) */}
                     <div className="flex items-center gap-2 md:hidden">
                         <Button variant="ghost" size="icon" onClick={toggleTheme}>
                             {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-                            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-                        </Button>
                     </div>
                 </div>
 
-                {/* Mobile Menu */}
-                {mobileMenuOpen && (
-                    <div className="md:hidden border-b bg-background p-4 space-y-4 animate-in slide-in-from-top-2">
-                        <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="block">
-                            <Button variant="ghost" className="w-full justify-start">Sign In</Button>
-                        </Link>
-                        <Link to="/signup" onClick={() => setMobileMenuOpen(false)} className="block">
-                            <Button className="w-full">Get Started</Button>
-                        </Link>
-                    </div>
-                )}
+
             </header>
 
             <main className="flex-1">
@@ -94,14 +79,14 @@ const LandingPage = () => {
                             The safe, verified marketplace for students. Get tasks done or earn extra cash between classes.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
-                            <Link to="/signup">
+                            <Link to="/login">
                                 <Button size="lg" className="h-12 px-8 text-lg rounded-full w-full sm:w-auto">
-                                    Start Earning
+                                    Sign In
                                 </Button>
                             </Link>
-                            <Link to="/login">
+                            <Link to="/signup">
                                 <Button size="lg" variant="outline" className="h-12 px-8 text-lg rounded-full w-full sm:w-auto">
-                                    Post a Job
+                                    Sign Up
                                 </Button>
                             </Link>
                         </div>

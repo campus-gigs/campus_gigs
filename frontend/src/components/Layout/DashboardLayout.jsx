@@ -59,18 +59,20 @@ const DashboardLayout = () => {
           title={getPageTitle(location.pathname)}
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         />
-        <main className="flex-1 overflow-y-auto p-6 scroll-smooth flex flex-col">
+        <main className={`flex-1 flex flex-col ${location.pathname.includes('/chat') ? 'overflow-hidden p-0' : 'overflow-y-auto p-6 scroll-smooth'}`}>
           <div className="flex-1">
             <Outlet />
           </div>
-          <footer className="mt-12 py-6 border-t text-center text-xs text-muted-foreground">
-            <div className="flex justify-center gap-4 mb-2">
-              <Link to="/terms" target="_blank" className="hover:text-primary hover:underline transition-colors">Terms of Service</Link>
-              <Link to="/privacy" target="_blank" className="hover:text-primary hover:underline transition-colors">Privacy Policy</Link>
-              <Link to="/safety" target="_blank" className="hover:text-primary hover:underline transition-colors">Safety Tips</Link>
-            </div>
-            <p>&copy; {new Date().getFullYear()} Campus Gigs. All rights reserved.</p>
-          </footer>
+          {!location.pathname.includes('/chat') && (
+            <footer className="mt-12 py-6 border-t text-center text-xs text-muted-foreground">
+              <div className="flex justify-center gap-4 mb-2">
+                <Link to="/terms" target="_blank" className="hover:text-primary hover:underline transition-colors">Terms of Service</Link>
+                <Link to="/privacy" target="_blank" className="hover:text-primary hover:underline transition-colors">Privacy Policy</Link>
+                <Link to="/safety" target="_blank" className="hover:text-primary hover:underline transition-colors">Safety Tips</Link>
+              </div>
+              <p>&copy; {new Date().getFullYear()} Campus Gigs. All rights reserved.</p>
+            </footer>
+          )}
         </main>
       </div>
     </div>

@@ -106,6 +106,7 @@ function App() {
             <Route path="my-jobs" element={<Suspense fallback={<PageLoader />}><MyJobsPage /></Suspense>} />
             <Route path="favorites" element={<Suspense fallback={<PageLoader />}><FavoritesPage /></Suspense>} />
             <Route path="profile" element={<Suspense fallback={<PageLoader />}><ProfilePage /></Suspense>} />
+            <Route path="profile/:userId" element={<Suspense fallback={<PageLoader />}><ProfilePage /></Suspense>} />
             <Route path="chat" element={<Suspense fallback={<PageLoader />}><ChatPage /></Suspense>} />
             <Route
               path="admin"

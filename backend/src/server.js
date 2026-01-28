@@ -12,7 +12,9 @@ const server = http.createServer(app);
 
 // Security Headers
 const helmet = require('helmet');
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 
 // Trust Proxy (Required for Rate Limiting & Secure Cookies behind Render/Vercel LB)
 app.set('trust proxy', 1);
@@ -60,6 +62,7 @@ app.use(express.json());
 
 // Serve static files
 app.use(express.static('public'));
+app.use('/uploads', express.static('uploads'));
 
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/jobs", require("./routes/jobs"));
@@ -109,9 +112,24 @@ io.on('connection', (socket) => {
     console.log(`User ${userId} is online (Sockets: ${onlineUsers.get(userId).size})`);
   }
 
-  socket.on('join_chat', (jobId) => {
-    socket.join(jobId);
-    console.log(`Socket ${socket.id} joined room: ${jobId}`);
+  // Join Conversation Room
+  socket.on('join_conversation', (conversationId) => {
+    socket.join(conversationId);
+    console.log(`Socket ${socket.id} joined conversation: ${conversationId}`);
+  });
+
+  // Typing Indicators
+  socket.on('typing', ({ conversationId, userName }) => {
+    socket.to(conversationId).emit('typing', { conversationId, userName });
+  });
+
+  socket.on('stop_typing', ({ conversationId }) => {
+    socket.to(conversationId).emit('stop_typing', { conversationId });
+  });
+
+  // Legacy support for older frontend clients (can remove later)
+  socket.on('join_chat', (roomId) => {
+    socket.join(roomId);
   });
 
   socket.on('disconnect', () => {

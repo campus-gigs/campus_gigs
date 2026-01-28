@@ -91,7 +91,7 @@ router.get("/:userId", async (req, res) => {
       return res.status(404).json({ msg: "User not found" });
     }
 
-    const completedJobs = await Job.countDocuments({
+    const jobsCompleted = await Job.countDocuments({
       acceptedBy: req.params.userId,
       status: "completed"
     });
@@ -100,17 +100,20 @@ router.get("/:userId", async (req, res) => {
       user: {
         _id: user._id,
         name: user.name,
-        rating: user.rating,
-        ratingCount: user.ratingCount,
+        rating: user.rating || 0,
+        ratingCount: user.ratingCount || 0,
         profilePhoto: user.profilePhoto,
-        bio: user.bio
+        bio: user.bio || ""
       },
       stats: {
         jobsCompleted,
-        averageRating: user.ratingCount > 0 ? user.rating.toFixed(1) : 0
+        averageRating: (user.ratingCount > 0 && typeof user.rating === 'number')
+          ? user.rating.toFixed(1)
+          : "0.0"
       }
     });
   } catch (err) {
+    console.error("Profile Error:", err);
     res.status(500).json({ msg: "Server error" });
   }
 });

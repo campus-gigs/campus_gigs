@@ -1,25 +1,34 @@
 const mongoose = require('mongoose');
 
 const MessageSchema = new mongoose.Schema({
-    job: {
+    conversationId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Job',
-        required: false
+        ref: 'Conversation',
+        required: true,
+        index: true
     },
     sender: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
     },
-    recipient: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: false // Optional if part of a job chat (implied), required if DM
-    },
     content: {
         type: String,
-        required: true
+        default: ''
     },
+    readBy: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }],
+    attachment: {
+        path: { type: String }, // URL/Path to file
+        type: { type: String, enum: ['image', 'file'], default: 'image' },
+        originalName: String
+    },
+    // Deprecated fields kept for archival pointers
+    job: { type: mongoose.Schema.Types.ObjectId, ref: 'Job' },
+    recipient: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+
     createdAt: {
         type: Date,
         default: Date.now

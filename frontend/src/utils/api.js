@@ -85,11 +85,21 @@ export const adminAPI = {
 
 // Chat API
 export const chatAPI = {
+  getConversations: () => api.get('/api/chat/conversations'),
+  startConversation: (recipientId, jobId) => api.post('/api/chat/start', { recipientId, jobId }),
+  getConversationMessages: (conversationId) => api.get(`/api/chat/${conversationId}/messages`),
+  sendConversationMessage: (conversationId, content, attachment = null) =>
+    api.post(`/api/chat/${conversationId}/messages`, { content, attachment }),
+
+  // Legacy
   getMessages: (jobId) => api.get(`/api/chat/${jobId}`),
   sendMessage: (jobId, content) => api.post(`/api/chat/${jobId}`, { content }),
   getDirectMessages: (userId) => api.get(`/api/chat/direct/${userId}`),
   sendDirectMessage: (userId, content) => api.post(`/api/chat/direct/${userId}`, { content }),
   getDMs: () => api.get('/api/chat/dms'),
+  uploadAttachment: (formData) => api.post('/api/chat/upload', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
 };
 
 export default api;

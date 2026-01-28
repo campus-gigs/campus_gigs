@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { User, Mail, Phone, FileText, Star, Briefcase, CheckCircle, Save, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
@@ -19,9 +20,13 @@ import { profileAPI } from '../../utils/api';
 import { toast } from 'sonner';
 
 const ProfilePage = () => {
-  const { user, updateUser, logout } = useAuth();
+  const { userId } = useParams();
+  const { user: currentUser, updateUser, logout } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [profileUser, setProfileUser] = useState(null);
   const [stats, setStats] = useState({ jobsPosted: 0, jobsCompleted: 0, averageRating: 0 });
+
+  // Form State
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -33,23 +38,33 @@ const ProfilePage = () => {
   const [deleteConfirmationText, setDeleteConfirmationText] = useState('');
   const [deleteLoading, setDeleteLoading] = useState(false);
 
+  const isMyProfile = !userId || userId === currentUser?._id;
+
   useEffect(() => {
-    if (user) {
+    if (isMyProfile && currentUser) {
       setFormData({
-        name: user.name || '',
-        phone: user.phone || '',
-        bio: user.bio || '',
+        name: currentUser.name || '',
+        phone: currentUser.phone || '',
+        bio: currentUser.bio || '',
       });
+      setProfileUser(currentUser);
     }
     fetchProfile();
-  }, [user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, currentUser, isMyProfile]);
 
   const fetchProfile = async () => {
     try {
-      const response = await profileAPI.getProfile();
-      setStats(response.data.stats);
+      if (isMyProfile) {
+        const response = await profileAPI.getProfile();
+        setStats(response.data.stats);
+      } else {
+        const response = await profileAPI.getPublicProfile(userId);
+        setProfileUser(response.data.user);
+        setStats(response.data.stats);
+      }
     } catch (error) {
-      // Silently fail
+      toast.error('Failed to load profile');
     }
   };
 
@@ -85,6 +100,16 @@ const ProfilePage = () => {
     }
   };
 
+  if (!profileUser && !isMyProfile) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  const displayUser = isMyProfile ? currentUser : profileUser;
+
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Profile header */}
@@ -92,20 +117,23 @@ const ProfilePage = () => {
         <CardContent className="pt-6">
           <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
             <Avatar className="w-20 h-20">
-              <AvatarImage src={user?.profilePhoto || "/logo.svg"} className="object-cover" />
+              <AvatarImage src={displayUser?.profilePhoto || "/logo.svg"} className="object-cover" />
               <AvatarFallback className="text-2xl">
-                {user?.name?.charAt(0).toUpperCase() || 'U'}
+                {displayUser?.name?.charAt(0).toUpperCase() || 'U'}
               </AvatarFallback>
             </Avatar>
             <div>
-              <h2 className="text-2xl font-bold font-display">{user?.name}</h2>
-              <p className="text-muted-foreground">{user?.email}</p>
-              {user?.rating > 0 && (
+              <h2 className="text-2xl font-bold font-display">{displayUser?.name}</h2>
+              <p className="text-muted-foreground">{displayUser?.email}</p>
+              {displayUser?.bio && (
+                <p className="text-sm text-foreground/80 mt-2 max-w-md">{displayUser.bio}</p>
+              )}
+              {displayUser?.rating > 0 && (
                 <div className="flex items-center justify-center sm:justify-start gap-1 mt-1">
                   <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                  <span className="font-medium">{user.rating.toFixed(1)}</span>
+                  <span className="font-medium">{displayUser.rating.toFixed(1)}</span>
                   <span className="text-muted-foreground">
-                    ({user.ratingCount} reviews)
+                    ({displayUser.ratingCount} reviews)
                   </span>
                 </div>
               )}
@@ -116,13 +144,15 @@ const ProfilePage = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="pt-6 text-center">
-            <Briefcase className="w-8 h-8 mx-auto mb-2 text-primary" />
-            <p className="text-2xl font-bold">{stats.jobsPosted}</p>
-            <p className="text-sm text-muted-foreground">Jobs Posted</p>
-          </CardContent>
-        </Card>
+        {isMyProfile && (
+          <Card>
+            <CardContent className="pt-6 text-center">
+              <Briefcase className="w-8 h-8 mx-auto mb-2 text-primary" />
+              <p className="text-2xl font-bold">{stats.jobsPosted || 0}</p>
+              <p className="text-sm text-muted-foreground">Jobs Posted</p>
+            </CardContent>
+          </Card>
+        )}
         <Card>
           <CardContent className="pt-6 text-center">
             <CheckCircle className="w-8 h-8 mx-auto mb-2 text-green-500" />
@@ -139,101 +169,105 @@ const ProfilePage = () => {
         </Card>
       </div>
 
-      {/* Edit profile form */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Edit Profile</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  id="name"
-                  placeholder="Your name"
-                  className="pl-10"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                />
+      {/* Edit profile form - ONLY for My Profile */}
+      {isMyProfile && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Edit Profile</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="name"
+                    placeholder="Your name"
+                    className="pl-10"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  />
+                </div>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  id="email"
-                  value={user?.email || ''}
-                  className="pl-10"
-                  disabled
-                />
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="email"
+                    value={displayUser?.email || ''}
+                    className="pl-10"
+                    disabled
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">Email cannot be changed</p>
               </div>
-              <p className="text-xs text-muted-foreground">Email cannot be changed</p>
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
-              <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  id="phone"
-                  placeholder="Your phone number"
-                  className="pl-10"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                />
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone Number</Label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="phone"
+                    placeholder="Your phone number"
+                    className="pl-10"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  />
+                </div>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="bio">Bio</Label>
-              <div className="relative">
-                <FileText className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
-                <Textarea
-                  id="bio"
-                  placeholder="Tell others about yourself..."
-                  className="pl-10"
-                  rows={4}
-                  value={formData.bio}
-                  onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                />
+              <div className="space-y-2">
+                <Label htmlFor="bio">Bio</Label>
+                <div className="relative">
+                  <FileText className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
+                  <Textarea
+                    id="bio"
+                    placeholder="Tell others about yourself..."
+                    className="pl-10"
+                    rows={4}
+                    value={formData.bio}
+                    onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                  />
+                </div>
               </div>
-            </div>
 
-            <Button type="submit" disabled={loading}>
-              <Save className="w-4 h-4 mr-2" />
-              {loading ? 'Saving...' : 'Save Changes'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+              <Button type="submit" disabled={loading}>
+                <Save className="w-4 h-4 mr-2" />
+                {loading ? 'Saving...' : 'Save Changes'}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Danger Zone */}
-      <Card className="border-destructive/20 mb-8">
-        <CardHeader>
-          <CardTitle className="text-destructive">Danger Zone</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <p className="font-medium">Delete Account</p>
-              <p className="text-sm text-muted-foreground">
-                Permanently remove your account and all your data.
-              </p>
+      {/* Danger Zone - ONLY for My Profile */}
+      {isMyProfile && (
+        <Card className="border-destructive/20 mb-8">
+          <CardHeader>
+            <CardTitle className="text-destructive">Danger Zone</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <p className="font-medium">Delete Account</p>
+                <p className="text-sm text-muted-foreground">
+                  Permanently remove your account and all your data.
+                </p>
+              </div>
+              <Button
+                variant="destructive"
+                onClick={() => setDeleteDialogOpen(true)}
+                disabled={loading}
+              >
+                Delete Account
+              </Button>
             </div>
-            <Button
-              variant="destructive"
-              onClick={() => setDeleteDialogOpen(true)}
-              disabled={loading}
-            >
-              Delete Account
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Custom Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

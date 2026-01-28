@@ -293,7 +293,7 @@ const JobDetailsDialog = ({ job, isOpen, onClose, onUpdate }) => {
       </Dialog>
 
       <ChatDialog
-        job={job}
+        jobId={job._id}
         isOpen={showChat}
         onClose={() => setShowChat(false)}
       />
