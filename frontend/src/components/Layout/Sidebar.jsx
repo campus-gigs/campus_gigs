@@ -75,9 +75,9 @@ const Sidebar = ({ closeSidebar }) => {
   }
 
   return (
-    <aside className="w-64 bg-card border-r h-screen flex flex-col transition-all duration-300">
+    <aside className="w-64 bg-card border-r h-full flex flex-col transition-all duration-300">
       {/* Logo */}
-      <div className="p-6 border-b">
+      <div className="p-6 border-b shrink-0">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center shrink-0 shadow-sm">
             <Briefcase className="w-6 h-6 text-white" />
@@ -87,7 +87,7 @@ const Sidebar = ({ closeSidebar }) => {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1">
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto min-h-0">
         {navItems.map((item) => (
           <NavLink
             key={item.to}
