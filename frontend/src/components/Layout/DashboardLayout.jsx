@@ -60,7 +60,7 @@ const DashboardLayout = () => {
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         />
         <main className={`flex-1 flex flex-col ${location.pathname.includes('/chat') ? 'overflow-hidden p-0' : 'overflow-y-auto p-6 scroll-smooth'}`}>
-          <div className="flex-1">
+          <div className="flex-1 flex flex-col h-full min-h-0">
             <Outlet />
           </div>
           {!location.pathname.includes('/chat') && (

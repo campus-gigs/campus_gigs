@@ -262,7 +262,7 @@ const ChatPanel = ({ conversation, recipientId, jobId, onClose }) => {
     // (Defensive check moved to top of render)
 
     return (
-        <div className="flex flex-col h-full w-full overflow-hidden bg-background border-l relative">
+        <div className="flex flex-col h-full w-full overflow-hidden bg-background border-l relative min-h-0">
             {/* Header */}
             <div className="h-14 px-4 border-b flex items-center justify-between shrink-0 bg-background/95 backdrop-blur z-20">
                 <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
@@ -281,7 +281,7 @@ const ChatPanel = ({ conversation, recipientId, jobId, onClose }) => {
             </div>
 
             {/* Messages */}
-            <div ref={containerRef} className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0 w-full scroll-smooth">
+            <div ref={containerRef} className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0 w-full overscroll-none">
                 {Object.entries(grouped).map(([d, msgs]) => (
                     <div key={d}>
                         <div className="text-[10px] text-center text-muted-foreground mb-3 font-medium uppercase tracking-wider">{d}</div>
@@ -317,7 +317,7 @@ const ChatPanel = ({ conversation, recipientId, jobId, onClose }) => {
 
             {/* Input */}
             <div className="p-2 sm:p-3 border-t bg-background shrink-0 w-full z-20">
-                <div className="flex gap-2 items-end max-w-4xl mx-auto w-full">
+                <div className="flex gap-2 items-end w-full">
                     <input ref={fileInputRef} type="file" hidden accept="image/*" onChange={handleFileSelect} />
 
                     <Popover>
