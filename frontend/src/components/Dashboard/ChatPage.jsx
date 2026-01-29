@@ -50,12 +50,12 @@ const ChatPage = () => {
     };
 
     return (
-        <div className="h-[calc(100vh-64px)] flex w-full bg-background overflow-hidden">
+        <div className="h-[100dvh] flex w-full bg-background overflow-hidden relative">
             {/* Sidebar List - Mobile: Hidden when chat active. Desktop: Always visible */}
             <div className={`
                 flex-col border-r bg-card h-full shrink-0
                 md:w-1/3 lg:w-1/4 md:flex
-                ${selectedConversation ? 'hidden' : 'flex w-full'}
+                ${selectedConversation ? 'hidden md:flex' : 'flex w-full'}
             `}>
                 <div className="p-4 border-b shrink-0 h-16 flex items-center">
                     <h2 className="text-xl font-bold tracking-tight">Messages</h2>

@@ -4,11 +4,16 @@ const transporter = process.env.SMTP_HOST
   ? nodemailer.createTransport({
     host: process.env.SMTP_HOST,
     port: process.env.SMTP_PORT || 587,
-    secure: false, // true for 465, false for other ports
+    secure: (process.env.SMTP_PORT || 587) == 465, // true for 465, false for 587
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
     },
+    tls: {
+      rejectUnauthorized: false, // Helps with some self-signed cert issues or proxy misconfigs
+    },
+    connectionTimeout: 10000, // 10 seconds
+    greetingTimeout: 10000,
   })
   : nodemailer.createTransport({
     service: 'gmail',

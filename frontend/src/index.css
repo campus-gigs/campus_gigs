@@ -53,12 +53,14 @@
   * {
     @apply border-border;
   }
+
   html,
   body,
   #root {
     height: 100%;
-    overflow: hidden;
+    /* overflow: hidden;  <-- Removed to allow native scroll on landing page */
   }
+
   body {
     @apply bg-background text-foreground font-sans antialiased;
   }

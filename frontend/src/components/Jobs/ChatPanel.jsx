@@ -94,23 +94,24 @@ const ChatPanel = ({ conversation, recipientId, jobId, onClose }) => {
             if (msg.conversationId !== conversationId) return;
 
             setMessages((prev) => {
-                // Try to match optimistic message
+                // 1. Identify if this is an optimistic message confirmation
+                // We match based on tempId (localId) OR content+timestamp proximity if tempId missing
                 const optimisticIndex = prev.findIndex(
                     (m) =>
-                        m.localId &&
-                        m.sender?._id === msg.sender?._id &&
-                        m.content === msg.content &&
-                        Math.abs(new Date(m.createdAt) - new Date(msg.createdAt)) < 5000
+                        (m.localId && m.localId === msg.localId) || // Direct match if backend returns it
+                        (m.sender?._id === msg.sender?._id &&
+                            m.content === msg.content &&
+                            Math.abs(new Date(m.createdAt || Date.now()) - new Date(msg.createdAt)) < 20000 && // Loose time window
+                            !m._id.match(/^[0-9a-fA-F]{24}$/)) // Ensure we are matching a temp ID (not a real one)
                 );
 
-                // Replace optimistic message
                 if (optimisticIndex !== -1) {
                     const updated = [...prev];
-                    updated[optimisticIndex] = msg;
+                    updated[optimisticIndex] = msg; // Replace optimistic with real
                     return updated;
                 }
 
-                // Avoid duplicates
+                // 2. Strict Duplicate Check
                 if (prev.some((m) => m._id === msg._id)) {
                     return prev;
                 }
@@ -261,44 +262,48 @@ const ChatPanel = ({ conversation, recipientId, jobId, onClose }) => {
     // (Defensive check moved to top of render)
 
     return (
-        <div className="flex flex-col h-full overflow-hidden bg-background border-l">
+        <div className="flex flex-col h-full w-full overflow-hidden bg-background border-l relative">
             {/* Header */}
-            <div className="h-16 px-4 border-b flex items-center justify-between shrink-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="h-14 px-4 border-b flex items-center justify-between shrink-0 bg-background/95 backdrop-blur z-20">
                 <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
                     onClick={() => otherUser?._id && navigate(`/dashboard/profile/${otherUser._id}`)}
                 >
-                    <Avatar className="h-9 w-9">
+                    <Avatar className="h-8 w-8">
                         <AvatarFallback>{otherUser?.name?.charAt(0) || 'U'}</AvatarFallback>
                     </Avatar>
-                    <span className="font-semibold text-sm">{otherUser?.name}</span>
+                    <span className="font-semibold text-sm truncate max-w-[150px]">{otherUser?.name}</span>
                 </div>
                 {onClose && (
-                    <Button variant="ghost" size="icon" onClick={onClose}>
-                        <X className="w-4 h-4" />
+                    <Button variant="ghost" size="icon" onClick={onClose} className="md:hidden">
+                        <X className="w-5 h-5" />
                     </Button>
                 )}
             </div>
 
             {/* Messages */}
-            <div ref={containerRef} className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
+            <div ref={containerRef} className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0 w-full scroll-smooth">
                 {Object.entries(grouped).map(([d, msgs]) => (
                     <div key={d}>
-                        <div className="text-xs text-center text-muted-foreground mb-2">{d}</div>
+                        <div className="text-[10px] text-center text-muted-foreground mb-3 font-medium uppercase tracking-wider">{d}</div>
                         {msgs.map((m) => {
                             const isMe = m.sender?._id === user._id || m.sender === user._id;
                             return (
-                                <div key={m._id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                                    <div className={`max-w-[75%] px-3 py-2 rounded-lg text-sm ${isMe ? 'bg-primary text-primary-foreground' : 'bg-card border'}`}>
+                                <div key={m._id} className={`flex ${isMe ? 'justify-end' : 'justify-start'} animate-in fade-in zoom-in-95 duration-200`}>
+                                    <div className={`max-w-[75%] px-3 py-2 rounded-2xl text-sm shadow-sm ${isMe
+                                        ? 'bg-primary text-primary-foreground rounded-tr-sm'
+                                        : 'bg-card border rounded-tl-sm'
+                                        }`}>
                                         {m.content}
                                         {m.attachment?.type === 'image' && (
                                             <img
                                                 src={`${BACKEND_URL}${normalizePath(m.attachment.path)}`}
                                                 alt="Attachment"
-                                                className="mt-2 rounded max-w-[220px]"
+                                                className="mt-2 rounded-lg max-w-full sm:max-w-[220px]"
                                                 loading="lazy"
+                                                onLoad={() => endRef.current?.scrollIntoView({ behavior: 'smooth' })}
                                             />
                                         )}
-                                        <div className="text-[10px] opacity-60 mt-1 text-right">
+                                        <div className={`text-[10px] mt-1 text-right ${isMe ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
                                             {formatTime(m.createdAt)}
                                         </div>
                                     </div>
@@ -307,58 +312,63 @@ const ChatPanel = ({ conversation, recipientId, jobId, onClose }) => {
                         })}
                     </div>
                 ))}
-                <div ref={endRef} />
+                <div ref={endRef} className="h-px w-full" />
             </div>
 
             {/* Input */}
-            <div className="relative p-3 border-t flex gap-2 items-end shrink-0 bg-background">
-                <input ref={fileInputRef} type="file" hidden accept="image/*" onChange={handleFileSelect} />
+            <div className="p-2 sm:p-3 border-t bg-background shrink-0 w-full z-20">
+                <div className="flex gap-2 items-end max-w-4xl mx-auto w-full">
+                    <input ref={fileInputRef} type="file" hidden accept="image/*" onChange={handleFileSelect} />
 
-                <Popover>
-                    <PopoverTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                            <Smile className="w-5 h-5" />
-                        </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="p-0">
-                        <EmojiPicker onEmojiClick={handleEmoji} previewConfig={{ showPreview: false }} />
-                    </PopoverContent>
-                </Popover>
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button variant="ghost" size="icon" className="shrink-0 h-10 w-10 text-muted-foreground hover:text-primary">
+                                <Smile className="w-5 h-5" />
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="p-0 border-none shadow-xl" side="top">
+                            <EmojiPicker onEmojiClick={handleEmoji} previewConfig={{ showPreview: false }} height={350} />
+                        </PopoverContent>
+                    </Popover>
 
-                <Button variant="ghost" size="icon" onClick={() => fileInputRef.current?.click()}>
-                    <ImageIcon className="w-5 h-5" />
-                </Button>
+                    <Button variant="ghost" size="icon" onClick={() => fileInputRef.current?.click()} className="shrink-0 h-10 w-10 text-muted-foreground hover:text-primary">
+                        <ImageIcon className="w-5 h-5" />
+                    </Button>
 
-                {previewUrl && (
-                    <div className="absolute bottom-full left-4 mb-2 p-2 bg-background border rounded shadow flex gap-2">
-                        <img src={previewUrl} alt="Preview" className="w-16 h-16 rounded object-cover" />
-                        <button onClick={clearAttachment}>
-                            <X className="w-4 h-4" />
-                        </button>
+                    <div className="flex-1 relative">
+                        {previewUrl && (
+                            <div className="absolute bottom-full left-0 mb-2 p-2 bg-background border rounded-lg shadow-lg flex gap-2 animate-in slide-in-from-bottom-5">
+                                <div className="relative">
+                                    <img src={previewUrl} alt="Preview" className="w-20 h-20 rounded-md object-cover" />
+                                    <button
+                                        onClick={clearAttachment}
+                                        className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5 shadow-sm hover:bg-destructive/90"
+                                    >
+                                        <X className="w-3 h-3" />
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                        <Textarea
+                            ref={textareaRef}
+                            value={newMessage}
+                            onChange={handleTyping}
+                            onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend(e)}
+                            placeholder="Type a message..."
+                            rows={1}
+                            className="min-h-[44px] max-h-[120px] py-3 resize-none rounded-2xl border-muted-foreground/20 focus-visible:ring-primary/20"
+                        />
                     </div>
-                )}
 
-                <Textarea
-                    ref={textareaRef}
-                    value={newMessage}
-                    onChange={handleTyping}
-                    onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend(e)}
-                    rows={1}
-                    className="resize-none min-h-[40px] max-h-[120px] overflow-y-auto"
-                    style={{ height: 'auto' }}
-                    onInput={(e) => {
-                        e.target.style.height = 'auto';
-                        e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
-                    }}
-                />
-
-                <Button
-                    size="icon"
-                    onClick={handleSend}
-                    disabled={!newMessage.trim() && !selectedFile}
-                >
-                    <Send className="w-4 h-4" />
-                </Button>
+                    <Button
+                        size="icon"
+                        onClick={handleSend}
+                        disabled={!newMessage.trim() && !selectedFile}
+                        className="shrink-0 h-11 w-11 rounded-full shadow-sm"
+                    >
+                        <Send className="w-5 h-5 ml-0.5" />
+                    </Button>
+                </div>
             </div>
         </div>
     );
