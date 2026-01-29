@@ -48,13 +48,8 @@ const LandingPage = () => {
                         <Button variant="ghost" size="icon" onClick={toggleTheme}>
                             {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
                         </Button>
-                        <div className="h-6 w-px bg-border mx-2" />
-                        <Link to="/login">
-                            <Button variant="ghost">Sign In</Button>
-                        </Link>
-                        <Link to="/signup">
-                            <Button>Get Started</Button>
-                        </Link>
+
+
                     </div>
 
                     {/* Mobile Menu Toggle (Theme Only) */}
