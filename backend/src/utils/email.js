@@ -1,27 +1,21 @@
 const nodemailer = require('nodemailer');
 
-const transporter = process.env.SMTP_HOST
-  ? nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: process.env.SMTP_PORT || 587,
-    secure: (process.env.SMTP_PORT || 587) == 465, // true for 465, false for 587
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-    tls: {
-      rejectUnauthorized: false, // Helps with some self-signed cert issues or proxy misconfigs
-    },
-    connectionTimeout: 10000, // 10 seconds
-    greetingTimeout: 10000,
-  })
-  : nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || 'smtp.gmail.com',
+  port: parseInt(process.env.SMTP_PORT || '465'), // Default to 465 for Gmail (SSL)
+  secure: (process.env.SMTP_PORT || '465') == '465', // true for 465
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+  tls: {
+    rejectUnauthorized: false, // Helps with self-signed certs
+  },
+  connectionTimeout: 10000, // 10 seconds
+  greetingTimeout: 10000,
+  socketTimeout: 10000,
+  family: 4, // Force IPv4 to avoid IPv6 connection issues on some clouds
+});
 
 const sendEmail = async (to, subject, htmlContent) => {
   try {

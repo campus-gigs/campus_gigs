@@ -78,19 +78,36 @@ app.use("/api/test", require("./routes/test"));
 // Auto-Promote God User
 const User = require('./models/User');
 const enlistGodUser = async () => {
-  // ... (same as before) ...
+  // Promote specified users to SUPERADMIN role on startup
   try {
-    const godEmail = process.env.SUPERADMIN_EMAIL;
-    if (!godEmail) return;
-    const godUser = await User.findOne({ email: godEmail });
-    if (godUser && godUser.role !== 'superadmin') {
-      godUser.role = 'superadmin';
-      godUser.isVerified = true;
-      await godUser.save();
-      console.log(`[GOD MODE] User ${godEmail} has been elevated to SUPERADMIN.`);
+    const godEmails = (process.env.SUPERADMIN_EMAIL || '')
+      .split(',')
+      .map(e => e.trim())
+      .filter(Boolean);
+
+    if (godEmails.length === 0) return;
+
+    for (const email of godEmails) {
+      const godUser = await User.findOne({ email });
+      if (godUser) {
+        let changed = false;
+        if (godUser.role !== 'superadmin') {
+          godUser.role = 'superadmin';
+          changed = true;
+        }
+        if (!godUser.isVerified) {
+          godUser.isVerified = true;
+          changed = true;
+        }
+
+        if (changed) {
+          await godUser.save();
+          console.log(`[GOD MODE] User ${email} has been elevated to SUPERADMIN.`);
+        }
+      }
     }
   } catch (err) {
-    console.error(err);
+    console.error('[GOD MODE] Error:', err);
   }
 };
 

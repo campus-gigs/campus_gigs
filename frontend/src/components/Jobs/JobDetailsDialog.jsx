@@ -36,23 +36,42 @@ const JobDetailsDialog = ({ job, isOpen, onClose, onUpdate }) => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  if (!job) return null;
+  // Local job state to handle full data fetching if needed
+  const [jobData, setJobData] = useState(job);
 
-  const isOwner = user?._id === (job.postedBy?._id || job.postedBy);
-  const isWorker = user?._id === (job.acceptedBy?._id || job.acceptedBy);
-  const canAccept = job.status === 'open' && !isOwner;
-  const canComplete = job.status === 'in-progress' && isWorker;
-  const canReview = job.status === 'completed' && isOwner && !job.workerRating;
-  const canDelete = isOwner && job.status === 'open';
+  // Fetch full details if acceptedBy is not fully populated
+  React.useEffect(() => {
+    setJobData(job); // Reset when prop changes
+    const fetchFullJob = async () => {
+      if (job && job.acceptedBy && !job.acceptedBy.name) {
+        try {
+          const res = await jobAPI.getJob(job._id);
+          setJobData(res.data);
+        } catch (err) {
+          console.error("Failed to fetch full job details", err);
+        }
+      }
+    };
+    if (job) fetchFullJob();
+  }, [job]);
+
+  if (!jobData) return null;
+
+  const isOwner = user?._id === (jobData.postedBy?._id || jobData.postedBy);
+  const isWorker = user?._id === (jobData.acceptedBy?._id || jobData.acceptedBy);
+  const canAccept = jobData.status === 'open' && !isOwner;
+  const canComplete = jobData.status === 'in-progress' && isWorker;
+  const canReview = jobData.status === 'completed' && isOwner && !jobData.workerRating;
+  const canDelete = isOwner && jobData.status === 'open';
 
   // Chat is available if job is NOT open (accepted/in-progress/completed)
   // AND user is either owner or worker
-  const canChat = job.status !== 'open' && (isOwner || isWorker);
+  const canChat = jobData.status !== 'open' && (isOwner || isWorker);
 
   const handleAccept = async () => {
     setLoading(true);
     try {
-      await jobAPI.acceptJob(job._id);
+      await jobAPI.acceptJob(jobData._id);
       toast.success('Job accepted! Start working on it.');
       onUpdate?.();
       onClose();
@@ -66,7 +85,7 @@ const JobDetailsDialog = ({ job, isOpen, onClose, onUpdate }) => {
   const handleComplete = async () => {
     setLoading(true);
     try {
-      await jobAPI.completeJob(job._id);
+      await jobAPI.completeJob(jobData._id);
       toast.success('Job marked as completed!');
       onUpdate?.();
       onClose();
@@ -84,7 +103,7 @@ const JobDetailsDialog = ({ job, isOpen, onClose, onUpdate }) => {
     }
     setLoading(true);
     try {
-      await jobAPI.reviewJob(job._id, rating);
+      await jobAPI.reviewJob(jobData._id, rating);
       toast.success('Review submitted!');
       onUpdate?.();
       onClose();
@@ -102,7 +121,7 @@ const JobDetailsDialog = ({ job, isOpen, onClose, onUpdate }) => {
   const handleConfirmDelete = async () => {
     setDeleteLoading(true);
     try {
-      await jobAPI.deleteJob(job._id);
+      await jobAPI.deleteJob(jobData._id);
       toast.success('Job deleted');
       onUpdate?.();
       setDeleteDialogOpen(false);
@@ -121,7 +140,7 @@ const JobDetailsDialog = ({ job, isOpen, onClose, onUpdate }) => {
     }
     setLoading(true);
     try {
-      await reportAPI.submitReport('job', job._id, reportReason);
+      await reportAPI.submitReport('job', jobData._id, reportReason);
       toast.success('Report submitted');
       setShowReport(false);
       setReportReason('');
@@ -140,51 +159,51 @@ const JobDetailsDialog = ({ job, isOpen, onClose, onUpdate }) => {
             <DialogHeader>
               <div className="flex items-start justify-between">
                 <div>
-                  <DialogTitle className="text-xl">{job.title}</DialogTitle>
+                  <DialogTitle className="text-xl">{jobData.title}</DialogTitle>
                   <DialogDescription className="flex items-center gap-2 mt-1">
                     <User className="w-4 h-4" />
-                    Posted by {job.postedBy?.name || 'Unknown'}
-                    {job.postedBy?.rating > 0 && (
+                    Posted by {jobData.postedBy?.name || 'Unknown'}
+                    {jobData.postedBy?.rating > 0 && (
                       <span className="flex items-center gap-0.5">
                         <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                        {job.postedBy.rating.toFixed(1)}
+                        {jobData.postedBy.rating.toFixed(1)}
                       </span>
                     )}
                   </DialogDescription>
                 </div>
-                <Badge variant={statusVariants[job.status]}>{job.status}</Badge>
+                <Badge variant={statusVariants[jobData.status]}>{jobData.status}</Badge>
               </div>
             </DialogHeader>
 
             <div className="space-y-4">
-              {job.description && (
-                <p className="text-sm text-muted-foreground">{job.description}</p>
+              {jobData.description && (
+                <p className="text-sm text-muted-foreground">{jobData.description}</p>
               )}
 
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold">₹{job.paymentAmount}</span>
+                  <span className="font-semibold">₹{jobData.paymentAmount}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4 text-muted-foreground" />
-                  <span>{job.expectedDuration}</span>
+                  <span>{jobData.expectedDuration}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Tag className="w-4 h-4 text-muted-foreground" />
-                  <span className="capitalize">{job.category}</span>
+                  <span className="capitalize">{jobData.category}</span>
                 </div>
-                {job.deadline && (
+                {jobData.deadline && (
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-muted-foreground" />
-                    <span>{new Date(job.deadline).toLocaleDateString()}</span>
+                    <span>{new Date(jobData.deadline).toLocaleDateString()}</span>
                   </div>
                 )}
               </div>
 
-              {job.acceptedBy && (
+              {jobData.acceptedBy && (
                 <div className="p-3 bg-muted rounded-lg text-sm">
                   <span className="text-muted-foreground">Accepted by: </span>
-                  <span className="font-medium">{job.acceptedBy.name || 'Worker'}</span>
+                  <span className="font-medium">{jobData.acceptedBy.name || 'Worker'}</span>
                 </div>
               )}
 
@@ -293,7 +312,7 @@ const JobDetailsDialog = ({ job, isOpen, onClose, onUpdate }) => {
       </Dialog>
 
       <ChatDialog
-        jobId={job._id}
+        jobId={jobData._id}
         isOpen={showChat}
         onClose={() => setShowChat(false)}
       />

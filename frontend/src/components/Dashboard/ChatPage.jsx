@@ -50,7 +50,7 @@ const ChatPage = () => {
     };
 
     return (
-        <div className="h-[100dvh] flex w-full bg-background overflow-hidden relative">
+        <div className="h-full flex w-full bg-background overflow-hidden relative">
             {/* Sidebar List - Mobile: Hidden when chat active. Desktop: Always visible */}
             <div className={`
                 flex-col border-r bg-card h-full shrink-0
