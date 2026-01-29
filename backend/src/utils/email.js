@@ -1,28 +1,16 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.SMTP_PORT || '465'), // Default to 465 for Gmail (SSL)
-  secure: (process.env.SMTP_PORT || '465') == '465', // true for 465
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-  tls: {
-    rejectUnauthorized: false, // Helps with self-signed certs
-  },
-  connectionTimeout: 10000, // 10 seconds
-  greetingTimeout: 10000,
-  socketTimeout: 10000,
-  family: 4, // Force IPv4 to avoid IPv6 connection issues on some clouds
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const sendEmail = async (to, subject, htmlContent) => {
-  try {
-    const fromName = 'Campus Gigs Admin';
-    const fromEmail = process.env.EMAIL_USER;
+  // Skip if no API key (dev mode safety)
+  if (!process.env.RESEND_API_KEY) {
+    console.warn('[Email] RESEND_API_KEY is missing. Email skipped.');
+    return { success: false, error: 'Missing API Key' };
+  }
 
-    console.log(`[Email] Sending to: ${to} via Nodemailer...`);
+  try {
+    console.log(`[Email] Sending to: ${to} via Resend...`);
 
     // Pro CSS-only Header (No broken images!)
     const headerHtml = `
@@ -48,18 +36,23 @@ const sendEmail = async (to, subject, htmlContent) => {
       </div>
     `;
 
-    const info = await transporter.sendMail({
-      from: `"${fromName}" <${fromEmail}>`,
-      to: to,
+    const { data, error } = await resend.emails.send({
+      from: process.env.EMAIL_FROM || 'onboarding@resend.dev',
+      to: [to],
       subject: subject,
       html: fullHtml,
     });
 
-    console.log('[Email] Sent successfully via Nodemailer! ID:', info.messageId);
-    return { success: true, messageId: info.messageId };
-  } catch (error) {
-    console.error('[Email] Nodemailer Error:', error);
-    return { success: false, error };
+    if (error) {
+      console.error('[Email] Resend API Error:', error);
+      return { success: false, error };
+    }
+
+    console.log('[Email] Sent successfully via Resend! ID:', data.id);
+    return { success: true, messageId: data.id };
+  } catch (err) {
+    console.error('[Email] Unexpected Error:', err);
+    return { success: false, error: err };
   }
 };
 
