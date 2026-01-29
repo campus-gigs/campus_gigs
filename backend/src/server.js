@@ -21,7 +21,7 @@ app.set('trust proxy', 1);
 
 const allowedOrigins = [
   "http://localhost:3000",
-  ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',').map(url => url.trim()) : [])
+  ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(/[ ,]+/).map(url => url.trim()) : [])
 ].filter(Boolean);
 
 const io = socketIo(server, {
