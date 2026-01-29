@@ -1,11 +1,13 @@
 const { Resend } = require('resend');
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Use RESEND_API_KEY if available, otherwise fall back to EMAIL_PASS (common mistake/legacy config)
+const apiKey = process.env.RESEND_API_KEY || process.env.EMAIL_PASS;
+const resend = new Resend(apiKey);
 
 const sendEmail = async (to, subject, htmlContent) => {
   // Skip if no API key (dev mode safety)
-  if (!process.env.RESEND_API_KEY) {
-    console.warn('[Email] RESEND_API_KEY is missing. Email skipped.');
+  if (!apiKey) {
+    console.warn('[Email] RESEND_API_KEY or EMAIL_PASS is missing. Email skipped.');
     return { success: false, error: 'Missing API Key' };
   }
 
