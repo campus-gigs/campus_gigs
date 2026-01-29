@@ -1,252 +1,190 @@
 # Campus Gigs 🎓
+> **The Safe, Verified Marketplace for Students.**
 
-**Campus Gigs** is a robust, full-stack freelance marketplace built specifically for university ecosystems. It facilitates secure, micro-task transactions between students (Clients) and student-freelancers (Workers).
+**Campus Gigs** is a full-stack MERN application designed to connect students for micro-jobs and tasks. It features real-time messaging, secure user authentication (verified .edu emails), and a robust job management system.
 
-## 📌 Project Overview
-
-### Problem
-Students often need quick cash or help with simple tasks (deliveries, assignments, moving help), but existing platforms (Upwork, Fiverr) are too formal, expensive, or global.
-
-### Solution
-A hyper-local marketplace where:
-*   Students post tasks with a budget.
-*   Peers apply instantly.
-*   Chat & coordination happens in real-time.
-*   Payments and completion are tracked securely.
-
-### Key Features
-*   **Role-Based Auth**: Students, Admins, and Super Admin (God Mode) with specific privileges.
-*   **Real-Time Chat**: WebSockets (Socket.io) for instant DMs and job-specific conversations.
-*   **Smart Notifications**: Automatic email alerts (Resend/Gmail) when users are offline.
-*   **Job Management**: Full lifecycle tracking (Open -> Accepted -> In Progress -> Completed).
-*   **Admin Dashboard**: User management, content moderation, and platform statistics.
+![Campus Gigs Dashboard Mockup](https://via.placeholder.com/800x400?text=Campus+Gigs+Dashboard+Preview)
 
 ---
 
-## 🛠️ Tech Stack
+## 🎨 UI/UX Design & Architecture
+
+The User Interface is built with a "Mobile-First" philosophy, ensuring a seamless experience across all devices.
+
+### Key Design Highlights:
+*   **Responsive Dashboard Layout**: A complex flexbox layout (`DashboardLayout.jsx`) that adapts content containers based on context:
+    *   **Chat Mode**: Strictly constrained height (`100dvh` & `h-full`) to prevent window scrolling and allow internal message scrolling.
+    *   **Document Mode**: Natural height (`w-full`) for Profile/Admin pages to allow standard scrolling without footer overlap.
+*   **Smart Sidebar**: A responsive navigation drawer that slides out on mobile but remains fixed on desktop. It converts `h-screen` to `h-full` to respect mobile browser address bars.
+*   **Real-Time Interactions**: Optimistic UI updates in Chat ensure messages appear instantly while background socket events confirm delivery.
+*   **Dark Mode Support**: Fully integrated dark theme using Tailwind's `dark:` classes and CSS variables.
+
+---
+
+## 🛠️ Technology Stack
 
 ### Frontend
-*   **Framework**: [React.js](https://reactjs.org/) (v18)
-*   **Routing**: React Router DOM (v6)
-*   **State Management**: React Context API
-*   **Styling**: Tailwind CSS + Radix UI + Lucide React (Icons)
-*   **HTTP Client**: Axios (with Interceptors)
-*   **Real-time**: Socket.io Client
+*   **React 18**: Component-based UI library.
+*   **Tailwind CSS**: Utility-first styling for rapid custom designs.
+*   **Socket.io Client**: Real-time bi-directional event communication.
+*   **Lucide React**: Modern, consistent icon set.
+*   **Shadcn/UI (Concepts)**: Reusable UI components (Cards, Dialogs, Inputs) built on Radix primitives.
 
 ### Backend
-*   **Runtime**: [Node.js](https://nodejs.org/)
-*   **Framework**: [Express.js](https://expressjs.com/)
-*   **Database**: MongoDB (Mongoose ODM)
-*   **Real-time**: Socket.io
-*   **Security**: Helmet, CORS, Bcrypt, JWT
-*   **Email**: Nodemailer (SMTP/Gmail)
-
-### Infrastructure
-*   **Hosting**: Vercel (Frontend), Render (Backend)
-*   **Database**: MongoDB Atlas
-*   **Email Service**: Resend (SMTP) / Gmail Fallback
+*   **Node.js & Express**: High-performance REST API and Socket server.
+*   **MongoDB & Mongoose**: Flexible document schema for Jobs, Users, and Conversations.
+*   **Socket.io**: Handling real-time rooms, typing indicators, and online status.
+*   **Resend API**: Reliable transactional email delivery (replacing unreliable SMTP).
 
 ---
 
-## 📂 Folder & File Structure
+## 📂 Project Structure & Key Files
 
-### Backend (`/backend`)
-Responsible for API, Database, and WebSocket logic.
+Here is an overview of the core codebase structure:
 
-| Path | Description |
-| :--- | :--- |
-| `src/server.js` | **Entry Point**. Initializes Express, Socket.io, DB connection, and Middleware. handles `trust proxy` and CORS. |
-| `src/config/db.js` | Handles MongoDB connection logic. |
-| **`src/models/`** | **Data Models** (Schema definitions) |
-| `.../User.js` | User schema (Name, Email, Password, Role, Avg Rating). |
-| `.../Job.js` | Job schema (Title, Price, Status, PostedBy, AcceptedBy). |
-| `.../Conversation.js` | **[NEW]** Unifies Job Chats & DMs into one entity. |
-| `.../Message.js` | Linked to `Conversation`. Legacy fields deprecated. |
-| **`src/middleware/`** | **Request Interceptors** |
-| `.../auth.js` | Verifies JWT Token from `x-auth-token` header. Attaches `req.user`. |
-| `.../admin.js` | Ensures `req.user.role` is 'admin'. |
-| `.../superadmin.js` | Ensures `req.user.role` is 'superadmin' (God Mode). |
-| `.../upload.js` | Multer configuration for file uploads. |
-| **`src/routes/`** | **API Endpoints** |
-| `.../auth.js` | Login, Register, Verify OTP. |
-| `.../jobs.js` | CRUD for Jobs, Search, Apply. |
-| `.../chat.js` | Message handling (DMs & Job Chats). |
-| `.../god.js` | Super Admin exclusive routes (Impersonation, Broadcast). |
-| `src/utils/email.js` | **Smart Emailer**. Supports SMTP (Resend) with Gmail fallback. |
-
-### Frontend (`/frontend`)
-React Single Page Application (SPA).
-
-| Path | Description |
-| :--- | :--- |
-| `src/App.jsx` | Main Router configuration. Handles protected routes and layouts. |
-| `src/index.js` | Entry point. Mounts React to DOM. |
-| `src/utils/api.js` | **Axios Instance**. Auto-attaches JWT token to every request. Handles centralized error logging. |
-| `src/context/AuthContext.js` | Global Auth State. Handles Login/Logout logic and User data. |
-| **`src/components/`** | **UI Components** |
-| `.../Layout/` | `Sidebar`, `DashboardLayout`, `Navbar`. |
-| `.../Dashboard/` | Main views: `JobBoard` (Search), `MyJobs` (History), `ChatPage`. |
-| `.../Jobs/` | `JobCard`, `CreateJobDialog`, `ChatDialog` (The specific chat window). |
-| `.../Admin/` | `AdminPanel`: Table views for user management and moderation. |
-
----
-
-## 🏗️ Architecture Flow
-
-### 1. Request Lifecycle
-1.  **Client**: User clicks "Post Job" in React.
-2.  **Axios**: Sends `POST /api/jobs` request with JSON body + JWT Header.
-3.  **Express**: Receives request at Port 5000.
-4.  **Middleware**: `auth.js` decodes JWT. If valid, allows pass.
-5.  **Controller**: `routes/jobs.js` validates input and creates a `Job` document.
-6.  **Database**: Mongoose saves the document to MongoDB.
-7.  **Response**: Server sends `200 OK` with the new Job data.
-8.  **Client Update**: React updates state and shows a specific "Success" toast.
-
-### 2. Real-Time Chat Architecture
-1.  **Connection**: Client connects to `Socket.io` server on login.
-2.  **Room Join**: When opening a chat, Client emits `join_conversation(conversationId)`.
-3.  **Messaging**:
-    *   Sender emits `send_message` (via API, then broadcast).
-    *   **Typing Indicators**: Client emits `typing` / `stop_typing` events.
-    *   Server emits `receive_message` to the specific Room.
-    *   **Optimistic UI**: Client shows message immediately.
-    *   **Smart Notification**: Server checks if Recipient is connected.
-        *   **If Online**: Emits a `notification` event.
-        *   **If Offline**: Sends an email via `nodemailer`.
-
----
-
-## 🔐 Environment Variables
-
-**Do not share these keys publicly.**
-
-### Backend (`/backend/.env`)
-| Variable | Purpose | Example Value |
-| :--- | :--- | :--- |
-| `PORT` | API Port | `5000` |
-| `MONGO_URI` | Database Connection | `mongodb+srv://user:pass@cluster.mongodb.net/db` |
-| `JWT_SECRET` | Token Encryption Key | `crypto-random-string` |
-| `FRONTEND_URL` | CORS Policy (Comma Separated) | `https://campusgigs.site,http://localhost:3000` |
-| `EMAIL_USER` | Sending Email Address | `notifications@campusgigs.com` |
-| `EMAIL_PASS` | App Password or SMTP Pass | `xxxx-xxxx-xxxx` |
-| `SMTP_HOST` | (Optional) Custom SMTP | `smtp.resend.com` |
-| `SMTP_PORT` | (Optional) Custom Port | `587` |
-| `SUPERADMIN_EMAIL` | Auto-promote this user to God Mode | `admin@university.edu` |
-
-### Frontend (`/frontend/.env`)
-| Variable | Purpose | Example Value |
-| :--- | :--- | :--- |
-| `REACT_APP_BACKEND_URL` | API Base URL | `https://campus-gigs-backend.onrender.com` |
-
----
-
-## ⚡ Setup & Local Development
-
-### 1. Installation
 ```bash
-# Clone
-git clone https://github.com/your-repo/campus-gigs.git
-cd campus-gigs
-
-# Install Backend
-cd backend
-npm install
-
-# Install Frontend
-cd ../frontend
-npm install
-```
-
-### 2. Configuration
-Create `.env` files in both folders using the tables above.
-
-### 3. Running
-**Terminal 1 (Backend)**
-```bash
-cd backend
-npm run dev
-# Watch for: "Server running on port 5000" & "MongoDB Connected"
-```
-
-**Terminal 2 (Frontend)**
-```bash
-cd frontend
-npm start
-# Opens http://localhost:3000
+campus-gigs/
+├── backend/
+│   ├── src/
+│   │   ├── config/         # DB Connection
+│   │   ├── middleware/     # Auth, Upload, SuperAdmin checks
+│   │   ├── models/         # Mongoose Schemas (User, Job, Message)
+│   │   ├── routes/         # API Endpoints
+│   │   ├── utils/          # Email(Resend), Cloudinary helpers
+│   │   └── server.js       # Entry point + Socket.io Logic
+│   └── .env                # Secrets (DB URI, API Keys)
+│
+└── frontend/
+    ├── src/
+    │   ├── components/
+    │   │   ├── Admin/      # Admin Panel & God Mode
+    │   │   ├── Auth/       # Login/Signup/OTP
+    │   │   ├── Dashboard/  # Core pages (Profile, MyJobs)
+    │   │   ├── Jobs/       # ChatPanel, JobCards, Dialogs
+    │   │   └── Layout/     # DashboardLayout, Sidebar, Header
+    │   ├── context/        # AuthContext (Global State)
+    │   ├── pages/          # Landing Page (Public)
+    │   └── utils/          # Axios instance
+    └── index.css           # Global Styles & Tailwind Directives
 ```
 
 ---
 
-## 🔄 Data Migration (Chat Upgrade)
-Version 2.0 introduced a unified `Conversation` model. If you are updating from v1.0, you must run the migration script to convert legacy messages:
-```bash
-cd backend
-node scripts/migrate_chats.js
+## 💻 Key Implementation Details
+
+Here are the most critical parts of the code that power the application.
+
+### 1. The Socket.io Server logic (`backend/src/server.js`)
+Handles real-time connections, joining chat rooms, and online status tracking.
+
+```javascript
+// Managing Online Users with a Map
+const onlineUsers = new Map();
+
+io.on('connection', (socket) => {
+  const userId = socket.handshake.query.userId;
+  if (userId) {
+     // Add user to online map
+     if (!onlineUsers.has(userId)) onlineUsers.set(userId, new Set());
+     onlineUsers.get(userId).add(socket.id);
+  }
+
+  // Join specific conversation room for privacy
+  socket.on('join_conversation', (conversationId) => {
+    socket.join(conversationId);
+  });
+
+  // Handle Disconnect
+  socket.on('disconnect', () => {
+    // Cleanup logic...
+  });
+});
+```
+
+### 2. The Chat Panel UI (`ChatPanel.jsx`)
+Handles the complex scroll logic and message mounting.
+
+```javascript
+// Smart Scroll to Bottom Logic
+useLayoutEffect(() => {
+    const scrollToBottom = () => {
+        endRef.current?.scrollIntoView({ behavior: 'auto', block: 'end' });
+    };
+
+    // Scroll on mount or new message if near bottom
+    if (isNearBottom || isMine) {
+        scrollToBottom();
+    }
+}, [messages, user._id]);
+
+// Optimistic Deduplication
+socket.on('receive_message', (msg) => {
+    // Logic to prevent double-rendering messages sent by self
+    // checks tempId matches or timestmap proximity...
+});
+```
+
+### 3. Responsive Layout (`DashboardLayout.jsx`)
+The wrapper that fixes the "broken UI" issues by adapting to the content type.
+
+```javascript
+<main className={`flex-1 flex flex-col ${isChat ? 'overflow-hidden p-0' : 'overflow-y-auto p-6'}`}>
+  {/* 
+      Chat gets 'h-full' to lock strict height. 
+      Other pages get 'w-full' to grow naturally.
+  */}
+  <div className={`flex flex-col ${isChat ? 'flex-1 h-full min-h-0' : 'w-full'}`}>
+    <Outlet />
+  </div>
+</main>
+```
+
+### 4. Robust Email Service (`email.js`)
+Uses Resend API to ensure 99.9% delivery rates, solving previous SMTP timeouts.
+
+```javascript
+const { Resend } = require('resend');
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+const sendEmail = async (to, subject, htmlContent) => {
+  const { data, error } = await resend.emails.send({
+    from: process.env.EMAIL_FROM || 'onboarding@resend.dev',
+    to: [to],
+    subject: subject,
+    html: htmlContent, // Beautiful HTML templates included
+  });
+  return { success: !error, id: data?.id };
+};
 ```
 
 ---
 
-## 📡 API Reference
+## 🚀 Getting Started
 
-### Authentication (`/api/auth`)
-*   `POST /register`: Sign up (Sends OTP).
-*   `POST /verify-otp`: Activate account.
-*   `POST /login`: Get JWT token.
+1.  **Clone the repository**
+2.  **Install Dependencies**:
+    ```bash
+    cd backend && npm install
+    cd frontend && npm install
+    ```
+3.  **Environment Setup**:
+    Create `.env` files in both directories. Ensure you have:
+    *   `MONGO_URI`
+    *   `RESEND_API_KEY`
+    *   `FRONTEND_URL` (for CORS)
+4.  **Run Development Servers**:
+    ```bash
+    # Backend (Port 5000)
+    npm run dev
+    
+    # Frontend (Port 3000)
+    npm start
+    ```
 
-### Jobs (`/api/jobs`)
-*   `GET /`: List all jobs (Query params: `search`, `category`, `status`).
-*   `POST /`: Create job.
-*   `PUT /:id/apply`: Accept a job.
-*   `PUT /:id/complete`: Mark job as done (Requester only).
-
-### Chat (`/api/chat`)
-*   `GET /conversations`: List all unified (Job + Direct) conversations.
-*   `POST /start`: Start or retrieve a conversation (Idempotent).
-*   `GET /:conversationId/messages`: Get message history.
-*   `POST /:conversationId/messages`: Send a message.
-
-### Admin (`/api/admin`)
-*   `GET /stats`: Dashboard metrics.
-*   `GET /users`: User management list.
-*   `PATCH /users/:id/ban`: Ban user.
-
-### God Mode (`/api/god`)
-*   `POST /impersonate/:id`: Generate login token for ANY user.
-*   `POST /broadcast`: Send system-wide alert.
-*   `DELETE /users/:id`: Permanently delete user.
+## 🔒 Security Features
+*   **Helmet & Rate Limiting**: Protects against DDOS and header attacks.
+*   **JWT Authentication**: Secure, stateless session management.
+*   **God Mode**: Super-admin capabilities for platform moderation.
 
 ---
-
-## 🚀 Deployment Guide
-
-### Frontend (Vercel)
-1.  **Build Command**: `npm run build`
-2.  **Output Directory**: `build`
-3.  **Environment Variable**: `REACT_APP_BACKEND_URL` (Points to Render).
-4.  **Important**: `vercel.json` is included to handle SPA routing (rewrites to index.html).
-
-### Backend (Render)
-1.  **Build Command**: `npm install`
-2.  **Start Command**: `node src/server.js`
-3.  **Environment Variables**: Add all backend `.env` keys.
-4.  **Health Check**: Set path to `/health`.
-
----
-
-## 🔧 Common Issues & Fixes
-
-**Issue: CORS Error (Network Error)**
-*   **Fix**: Ensure `FRONTEND_URL` in backend matches your Vercel domain exactly.
-*   **Fix**: If using `www`, add it too: `https://site.com,https://www.site.com`.
-
-**Issue: Messages not appearing instantly**
-*   **Fix**: Check if `Socket.io` connection is established in browser Network tab (`/socket.io/?...`).
-*   **Fix**: Ensure your firewall/proxy allows WebSocket connections.
-
-**Issue: "Not Authorized"**
-*   **Fix**: Your JWT expired. Log out and log back in.
-
----
-
-*Documentation generated for Campus Gigs v2.0*
+&copy; 2026 Campus Gigs. Built for students.

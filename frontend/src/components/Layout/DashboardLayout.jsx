@@ -59,13 +59,13 @@ const DashboardLayout = () => {
           title={getPageTitle(location.pathname)}
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         />
-        <main className={`flex-1 flex flex-col ${location.pathname.includes('/chat') ? 'overflow-hidden p-0' : 'overflow-y-auto p-6 scroll-smooth'}`}>
+        <main className={`flex-1 flex flex-col ${location.pathname.includes('/chat') ? 'overflow-hidden p-0' : 'overflow-y-auto p-4 md:p-6 scroll-smooth'}`}>
           <div className={`flex flex-col ${location.pathname.includes('/chat') ? 'flex-1 h-full min-h-0' : 'w-full min-h-[calc(100vh-10rem)]'}`}>
             <Outlet />
           </div>
           {!location.pathname.includes('/chat') && (
             <footer className="mt-12 py-6 border-t text-center text-xs text-muted-foreground">
-              <div className="flex justify-center gap-4 mb-2">
+              <div className="flex flex-wrap justify-center gap-4 mb-2">
                 <Link to="/terms" target="_blank" className="hover:text-primary hover:underline transition-colors">Terms of Service</Link>
                 <Link to="/privacy" target="_blank" className="hover:text-primary hover:underline transition-colors">Privacy Policy</Link>
                 <Link to="/safety" target="_blank" className="hover:text-primary hover:underline transition-colors">Safety Tips</Link>
